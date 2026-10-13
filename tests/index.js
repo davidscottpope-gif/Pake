@@ -393,8 +393,6 @@ class PakeTestRunner {
       const platform = process.platform;
       const platformConfigs = {
         darwin: { ext: ".dmg", multiArch: true },
-        win32: { ext: ".msi", multiArch: false },
-        linux: { ext: ".deb", multiArch: false },
       };
 
       const config = platformConfigs[platform];
@@ -405,9 +403,8 @@ class PakeTestRunner {
     await this.runTest("Architecture Detection", () => {
       const currentArch = process.arch;
       const macArch = currentArch === "arm64" ? "aarch64" : currentArch;
-      const linuxArch = currentArch === "x64" ? "amd64" : currentArch;
 
-      return typeof macArch === "string" && typeof linuxArch === "string";
+      return typeof macArch === "string";
     });
 
     // File naming pattern test
@@ -421,19 +418,38 @@ class PakeTestRunner {
   }
 
   async runPakeCliTests() {
+    // Exercise the current fork's packed artifact, never an upstream npm release.
+    const installDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), "pake-fork-install-"),
+    );
+    this.trackTempDir(installDir);
+    const installedCli = path.join(
+      installDir,
+      "node_modules/pake-cli/dist/cli.js",
+    );
     // Package installation test
     await this.runTest(
       "pake-cli Package Installation",
       async () => {
         try {
-          execSync("pnpm install pake-cli@latest", {
-            encoding: "utf8",
-            timeout: 60000,
-            cwd: "/tmp",
-          });
-
-          const pakeCliPath = "/tmp/node_modules/.bin/pake";
-          return fs.existsSync(pakeCliPath);
+          const packed = JSON.parse(
+            execSync("npm pack --json --ignore-scripts", {
+              encoding: "utf8",
+              timeout: 60000,
+              cwd: config.PROJECT_ROOT,
+            }),
+          );
+          const tarball = path.join(config.PROJECT_ROOT, packed[0].filename);
+          this.trackTempFile(tarball);
+          execSync(
+            `npm install --prefix "${installDir}" --ignore-scripts --no-audit --no-fund "${tarball}"`,
+            {
+              encoding: "utf8",
+              timeout: 120000,
+              cwd: installDir,
+            },
+          );
+          return fs.existsSync(installedCli);
         } catch (error) {
           console.error("Package installation failed:", error.message);
           return false;
@@ -445,7 +461,7 @@ class PakeTestRunner {
     // Version command test
     await this.runTest("pake-cli Version Command", async () => {
       try {
-        const version = execSync("npx pake --version", {
+        const version = execSync(`node "${installedCli}" --version`, {
           encoding: "utf8",
           timeout: 10000,
         });
@@ -761,14 +777,8 @@ class PakeTestRunner {
           path.join(os.tmpdir(), "pake-universal-test-"),
         );
         this.trackTempDir(directory);
-        const extension =
-          process.platform === "darwin"
-            ? "app"
-            : process.platform === "win32"
-              ? "msi"
-              : "deb";
-        const appName =
-          process.platform === "linux" ? "githubmultiarch" : "GitHubMultiArch";
+        const extension = "app";
+        const appName = "GitHubMultiArch";
         const app = path.join(directory, `${appName}.${extension}`);
         return new Promise((resolve, reject) => {
           const child = spawn(
@@ -785,7 +795,7 @@ class PakeTestRunner {
               "--hide-title-bar",
               ...(multiArch ? ["--multi-arch"] : []),
               "--targets",
-              process.platform === "win32" ? "x64" : extension,
+              extension,
               "--json",
               "--icon",
               path.join(config.PROJECT_ROOT, "src-tauri/icons/icon.png"),
@@ -867,8 +877,6 @@ class PakeTestRunner {
           (file) =>
             file.endsWith(".app") ||
             file.endsWith(".dmg") ||
-            file.endsWith(".msi") ||
-            file.endsWith(".deb") ||
             file.endsWith(".exe"),
         );
       if (rootFiles.length > 0) {
@@ -897,15 +905,8 @@ class PakeTestRunner {
           const stats = fs.statSync(fullPath);
           if (stats.isDirectory()) {
             console.log(`${indent}[Dir] ${relativePath}/`);
-            // Show more directories for Windows debugging
-            if (
-              item === "bundle" ||
-              item === "release" ||
-              item === "msi" ||
-              item === "nsis" ||
-              item.includes("windows") ||
-              item.includes("msvc")
-            ) {
+            // Show more directories for build debugging
+            if (item === "bundle" || item === "release" || item === "nsis") {
               this.listTargetContents(fullPath, maxDepth, currentDepth + 1);
             }
           } else {
@@ -1002,7 +1003,7 @@ class PakeTestRunner {
       "URLTest",
     ];
 
-    const extensions = [".app", ".dmg", ".msi", ".deb", ".exe", ".AppImage"];
+    const extensions = [".app", ".dmg"];
 
     try {
       const files = fs.readdirSync(config.PROJECT_ROOT);
@@ -1014,7 +1015,7 @@ class PakeTestRunner {
             (!file.includes(".") &&
               !fs
                 .statSync(path.join(config.PROJECT_ROOT, file))
-                .isDirectory())); // Linux binary often has no extension
+                .isDirectory())); // Raw Mac binaries have no extension
 
         if (isTestArtifact) {
           const fullPath = path.join(config.PROJECT_ROOT, file);

@@ -44,10 +44,10 @@ describe('buildWindowConfigOverrides', () => {
     ).toBe(true);
   });
 
-  it('keeps the Windows/Linux-only config keys at fixed values', () => {
+  it('drops unsupported platform-only config keys', () => {
     const result = buildWindowConfigOverrides(makeOptions());
-    expect(result.hide_window_decorations).toBe(false);
-    expect(result.password_autosave).toBe(false);
+    expect(result).not.toHaveProperty('hide_window_decorations');
+    expect(result).not.toHaveProperty('password_autosave');
   });
 
   it('only enables start_to_tray when both flag and tray are on', () => {

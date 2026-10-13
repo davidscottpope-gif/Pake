@@ -46,7 +46,7 @@ describe('resolveSystemTrayIconPath', () => {
       ),
     ).resolves.toBe('png/icon_512.png');
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('must be .ico or .png'),
+      expect.stringContaining('must be .png'),
     );
     await expect(
       fsExtra.pathExists(path.join(tempDir, 'TestApp.svg')),

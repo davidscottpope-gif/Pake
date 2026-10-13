@@ -56,7 +56,7 @@ describe('structured process execution', () => {
     );
 
     const result = JSON.parse(await fs.readFile(resultPath, 'utf8'));
-    // Windows may expose the same working directory through its 8.3 alias.
+    // Compare resolved working directories.
     result.cwd = await fs.realpath(result.cwd);
     expect(result).toEqual({
       args: values,
@@ -98,45 +98,42 @@ describe('structured process execution', () => {
     ).rejects.toThrow('Command timed out after 50ms');
   });
 
-  it.skipIf(process.platform === 'win32')(
-    'stops compiler descendants before rejecting a timed-out build',
-    async () => {
-      const directory = await fs.mkdtemp(
-        path.join(os.tmpdir(), 'pake-timeout-tree-'),
-      );
-      tempDirs.push(directory);
-      const writes = path.join(directory, 'writes');
-      const childPidPath = path.join(directory, 'child-pid');
-      const endCancellation = beginBuildCancellation();
-      const script = `
+  it('stops compiler descendants before rejecting a timed-out build', async () => {
+    const directory = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'pake-timeout-tree-'),
+    );
+    tempDirs.push(directory);
+    const writes = path.join(directory, 'writes');
+    const childPidPath = path.join(directory, 'child-pid');
+    const endCancellation = beginBuildCancellation();
+    const script = `
       const {spawn} = require('child_process');
       const fs = require('fs');
       const child = spawn(process.execPath, ['-e', 'process.on("SIGTERM",()=>{});setInterval(()=>require("fs").appendFileSync(process.argv[1],"x"),10)', process.argv[1]], {stdio:'ignore'});
       fs.writeFileSync(process.argv[2], String(child.pid));
       setInterval(()=>{},10000);
     `;
+    try {
+      await expect(
+        shellExec(
+          {
+            executable: process.execPath,
+            args: ['-e', script, writes, childPidPath],
+          },
+          500,
+        ),
+      ).rejects.toThrow('Command timed out after 500ms');
+      const size = (await fs.stat(writes)).size;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect((await fs.stat(writes)).size).toBe(size);
+    } finally {
+      endCancellation();
       try {
-        await expect(
-          shellExec(
-            {
-              executable: process.execPath,
-              args: ['-e', script, writes, childPidPath],
-            },
-            500,
-          ),
-        ).rejects.toThrow('Command timed out after 500ms');
-        const size = (await fs.stat(writes)).size;
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        expect((await fs.stat(writes)).size).toBe(size);
-      } finally {
-        endCancellation();
-        try {
-          process.kill(
-            Number(await fs.readFile(childPidPath, 'utf8')),
-            'SIGKILL',
-          );
-        } catch {}
-      }
-    },
-  );
+        process.kill(
+          Number(await fs.readFile(childPidPath, 'utf8')),
+          'SIGKILL',
+        );
+      } catch {}
+    }
+  });
 });

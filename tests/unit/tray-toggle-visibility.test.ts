@@ -14,9 +14,7 @@ const windowSource = fs.readFileSync(
 
 describe('tray click toggle (#1343)', () => {
   it('acts on one edge of the click, not both', () => {
-    // Windows emits TrayIconEvent::Click twice per physical click, Down then
-    // Up. Matching on button alone runs the toggle twice, so a hidden window is
-    // shown and immediately re-hidden.
+    // A click toggles once, on release.
     const handler = setupSource.slice(
       setupSource.indexOf('.on_tray_icon_event('),
     );
@@ -25,8 +23,7 @@ describe('tray click toggle (#1343)', () => {
   });
 
   it('treats a minimized window as not on screen', () => {
-    // hide_on_close minimizes before hiding, and Windows keeps IsWindowVisible
-    // true while a window is iconic. Without the is_minimized check the toggle
+    // hide_on_close minimizes before hiding. Without the is_minimized check the toggle
     // reads a minimized window as visible and hides it instead of restoring it.
     const fn = windowSource.slice(
       windowSource.indexOf('pub fn any_app_window_visible'),

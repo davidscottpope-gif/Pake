@@ -10,8 +10,8 @@
 
 ## 快速步骤
 
-1. [Fork 此项目](https://github.com/tw93/Pake/fork)
-2. 在你 Fork 的仓库里打开 Actions 页面，选择 `Build App With Pake CLI`，按 [CLI 选项](cli-usage_CN.md) 填写表单后点击 `Run Workflow`
+1. [打开这个个人分支](https://github.com/davidscottpope-gif/Pake/tree/feature/macos-only-ts-js-cleanup)
+2. 在个人仓库里打开 Actions 页面，选择 `feature/macos-only-ts-js-cleanup` 分支和 `Build App With Pake CLI`，按 [CLI 选项](cli-usage_CN.md) 填写表单后点击 `Run Workflow`
 
    ![Actions 界面](https://raw.githubusercontent.com/tw93/static/main/pake/action.png)
 

@@ -97,7 +97,7 @@ fn handle_scroll(scroll_y: f64, scroll_x: f64) {
 }
 ```
 
-`hide_title_bar` 是 `pake.json` 中的字段名（CLI 对应参数为 `--hide-title-bar`），仅支持 macOS，在 Windows 和 Linux 上会被忽略，这两个平台改用 `hide_window_decorations`（`--hide-window-decorations`）。
+`hide_title_bar` 是 `pake.json` 中的字段名（CLI 对应参数为 `--hide-title-bar`），仅支持 macOS。
 
 ## 静态文件打包
 
@@ -160,7 +160,6 @@ pake https://mail.google.com --name "Gmail Work" --identifier com.example.gmail.
 │   │   ├── inject/        # 网页注入脚本（CSS、JS、事件监听）
 │   │   └── lib.rs         # 应用入口
 │   ├── icons/             # macOS 图标 (.icns)
-│   ├── png/               # Windows/Linux 图标 (.ico, .png)
 │   └── pake.json          # 运行时配置模板
 ├── scripts/               # 实用构建脚本
 └── tests/                 # 测试套件
@@ -179,46 +178,11 @@ pake https://mail.google.com --name "Gmail Work" --identifier com.example.gmail.
 
 - Xcode 命令行工具：`xcode-select --install`
 
-**Windows:**
-
-- **重要**：先看 [Tauri 依赖项指南](https://v2.tauri.app/start/prerequisites/)
-- Windows 10 SDK (10.0.19041.0) 和 Visual Studio Build Tools 2022 (≥17.2)
-- 必需的运行库：
-  1. Microsoft Visual C++ 2015-2022 Redistributable (x64)
-  2. Microsoft Visual C++ 2015-2022 Redistributable (x86)
-  3. Microsoft Visual C++ 2012 Redistributable (x86)（可选）
-  4. Microsoft Visual C++ 2013 Redistributable (x86)（可选）
-  5. Microsoft Visual C++ 2008 Redistributable (x86)（可选）
-
-- **Windows ARM (ARM64) 支持**：在 Visual Studio Installer 的单个组件里安装 MSVC v143 - VS 2022 C++ ARM64 构建工具
-
-**Linux (Ubuntu):**
-
-```bash
-sudo apt install libdbus-1-dev \
-    libsoup-3.0-dev \
-    libjavascriptcoregtk-4.1-dev \
-    libwebkit2gtk-4.1-dev \
-    build-essential \
-    curl \
-    wget \
-    file \
-    libxdo-dev \
-    libssl-dev \
-    libgtk-3-dev \
-    libayatana-appindicator3-dev \
-    librsvg2-dev \
-    gnome-video-effects \
-    gnome-video-effects-extra \
-    libglib2.0-dev \
-    pkg-config
-```
-
 ### 安装
 
 ```bash
 # 克隆仓库
-git clone https://github.com/tw93/Pake.git
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git
 cd Pake
 
 # 安装依赖

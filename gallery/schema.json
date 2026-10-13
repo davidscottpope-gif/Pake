@@ -54,21 +54,63 @@
       "additionalProperties": false,
       "minProperties": 1,
       "properties": {
-        "width": { "type": "integer", "minimum": 320, "maximum": 4000 },
-        "height": { "type": "integer", "minimum": 320, "maximum": 4000 },
-        "min_width": { "type": "integer", "minimum": 0, "maximum": 4000 },
-        "min_height": { "type": "integer", "minimum": 0, "maximum": 4000 },
-        "hide_title_bar": { "type": "boolean" },
-        "dark_mode": { "type": "boolean" },
-        "incognito": { "type": "boolean" },
-        "maximize": { "type": "boolean" },
-        "always_on_top": { "type": "boolean" },
-        "new_window": { "type": "boolean" },
-        "enable_find": { "type": "boolean" },
-        "force_internal_navigation": { "type": "boolean" },
-        "internal_url_regex": { "type": "string", "minLength": 1 },
-        "zoom": { "type": "integer", "minimum": 50, "maximum": 200 },
-        "user_agent": { "type": "string", "minLength": 1 }
+        "width": {
+          "type": "integer",
+          "minimum": 320,
+          "maximum": 4000
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 320,
+          "maximum": 4000
+        },
+        "min_width": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4000
+        },
+        "min_height": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4000
+        },
+        "hide_title_bar": {
+          "type": "boolean"
+        },
+        "dark_mode": {
+          "type": "boolean"
+        },
+        "incognito": {
+          "type": "boolean"
+        },
+        "maximize": {
+          "type": "boolean"
+        },
+        "always_on_top": {
+          "type": "boolean"
+        },
+        "new_window": {
+          "type": "boolean"
+        },
+        "enable_find": {
+          "type": "boolean"
+        },
+        "force_internal_navigation": {
+          "type": "boolean"
+        },
+        "internal_url_regex": {
+          "type": "string",
+          "minLength": 1
+        },
+        "zoom": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 200
+        },
+        "user_agent": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "inject_css": {
@@ -86,7 +128,10 @@
       "description": "Platforms the recipe is known to work on. Omit when it works on both.",
       "minItems": 1,
       "uniqueItems": true,
-      "items": { "type": "string", "enum": ["mac", "windows"] }
+      "items": {
+        "type": "string",
+        "enum": ["mac"]
+      }
     }
   },
   "definitions": {
@@ -95,8 +140,16 @@
       "additionalProperties": false,
       "required": ["en", "zh-Hans"],
       "properties": {
-        "en": { "type": "string", "minLength": 1, "maxLength": 80 },
-        "zh-Hans": { "type": "string", "minLength": 1, "maxLength": 80 }
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "zh-Hans": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
       }
     }
   }

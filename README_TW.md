@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/tw93/Pake/main/assets/logo.png" width="138" />
   <h1>Pake</h1>
-  <p><b>一個指令把任意網頁打包成桌面應用，支援 macOS、Windows 與 Linux</b></p>
+  <p><b>一個指令把任意網頁打包成桌面應用，僅支援 macOS（Mac 專用分支）</b></p>
   <p><a href="README.md">English</a> · <a href="README_CN.md">中文</a> · 繁體 · <a href="README_JA.md">日本語</a> · <a href="README_KR.md">한국어</a> · <a href="README_DE.md">Deutsch</a> · <a href="README_FR.md">Français</a></p>
   <a href="https://twitter.com/HiTw93" target="_blank"><img alt="twitter" src="https://img.shields.io/badge/follow-Tw93-red?style=flat-square&logo=Twitter"></a>
   <a href="https://t.me/+9f9gf4ZrFSQ2OWVl" target="_blank"><img alt="telegram" src="https://img.shields.io/badge/chat-telegram-blueviolet?style=flat-square&logo=Telegram"></a>
@@ -26,17 +26,15 @@
 
 ## 常用包下載
 
+> 這是 [tw93/Pake](https://github.com/tw93/Pake) 的個人 Mac 專用分支，僅支援 macOS，已移除 Linux 與 Windows 建置。下方下載連結指向上游預先建置的 macOS `.dmg` 範例，並非本分支的發佈版本。
+
 <table>
     <tr>
         <td>WeRead
             <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x86_64.deb">Linux</a>
         </td>
         <td>Twitter
             <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -46,13 +44,9 @@
     <tr>
         <td>Grok
             <a href="https://github.com/tw93/Pake/releases/latest/download/Grok.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x86_64.deb">Linux</a>
         </td>
         <td>DeepSeek
             <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -62,13 +56,9 @@
     <tr>
         <td>ChatGPT
             <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x86_64.deb">Linux</a>
         </td>
         <td>Gemini
             <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -78,13 +68,9 @@
     <tr>
       <td>YouTube Music
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x86_64.deb">Linux</a>
       </td>
       <td>YouTube
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x86_64.deb">Linux</a>
       </td>
     </tr>
     <tr>
@@ -94,13 +80,9 @@
     <tr>
         <td>LiZhi
             <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x86_64.deb">Linux</a>
         </td>
         <td>ProgramMusic
             <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -110,13 +92,9 @@
     <tr>
         <td>Excalidraw
             <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x86_64.deb">Linux</a>
         </td>
         <td>XiaoHongShu
             <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -126,13 +104,9 @@
     <tr>
         <td>Notion
             <a href="https://github.com/tw93/Pake/releases/latest/download/Notion.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x86_64.deb">Linux</a>
         </td>
         <td>Flomo
             <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -147,25 +121,25 @@
 
 <br/>
 
-| Mac                                                       | Windows/Linux                                       | 功能                 |
-| --------------------------------------------------------- | --------------------------------------------------- | -------------------- |
-| <kbd>⌘</kbd> + <kbd>[</kbd>                               | <kbd>Ctrl</kbd> + <kbd>[</kbd>                      | 返回上一頁           |
-| <kbd>⌘</kbd> + <kbd>]</kbd>                               | <kbd>Ctrl</kbd> + <kbd>]</kbd>                      | 前進到下一頁         |
-| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↑</kbd>                      | 自動捲動到頁面頂端   |
-| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↓</kbd>                      | 自動捲動到頁面底部   |
-| <kbd>⌘</kbd> + <kbd>R</kbd>                               | <kbd>Ctrl</kbd> + <kbd>R</kbd>                      | 重新整理頁面         |
-| <kbd>⌘</kbd> + <kbd>W</kbd>                               | <kbd>Ctrl</kbd> + <kbd>W</kbd>                      | 隱藏視窗（非退出）   |
-| <kbd>⌘</kbd> + <kbd>-</kbd>                               | <kbd>Ctrl</kbd> + <kbd>-</kbd>                      | 縮小頁面             |
-| <kbd>⌘</kbd> + <kbd>=</kbd>                               | <kbd>Ctrl</kbd> + <kbd>=</kbd>                      | 放大頁面             |
-| <kbd>⌘</kbd> + <kbd>0</kbd>                               | <kbd>Ctrl</kbd> + <kbd>0</kbd>                      | 重設頁面縮放         |
-| <kbd>⌘</kbd> + <kbd>L</kbd>                               | <kbd>Ctrl</kbd> + <kbd>L</kbd>                      | 複製目前頁面網址     |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>   | 貼上並符合樣式       |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>   | 回到首頁             |
-| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>   | 開啟偵錯（僅開發版） |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Del</kbd> | 清除快取並重啟       |
-| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | <kbd>F11</kbd>                                      | 切換原生全螢幕       |
+| Mac                                                       | 功能                 |
+| --------------------------------------------------------- | -------------------- |
+| <kbd>⌘</kbd> + <kbd>[</kbd>                               | 返回上一頁           |
+| <kbd>⌘</kbd> + <kbd>]</kbd>                               | 前進到下一頁         |
+| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | 自動捲動到頁面頂端   |
+| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | 自動捲動到頁面底部   |
+| <kbd>⌘</kbd> + <kbd>R</kbd>                               | 重新整理頁面         |
+| <kbd>⌘</kbd> + <kbd>W</kbd>                               | 隱藏視窗（非退出）   |
+| <kbd>⌘</kbd> + <kbd>-</kbd>                               | 縮小頁面             |
+| <kbd>⌘</kbd> + <kbd>=</kbd>                               | 放大頁面             |
+| <kbd>⌘</kbd> + <kbd>0</kbd>                               | 重設頁面縮放         |
+| <kbd>⌘</kbd> + <kbd>L</kbd>                               | 複製目前頁面網址     |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | 貼上並符合樣式       |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | 回到首頁             |
+| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | 開啟偵錯（僅開發版） |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | 清除快取並重啟       |
+| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | 切換原生全螢幕       |
 
-雙擊標題列可以切換全螢幕，Windows 與 Linux 加上 `--hide-window-decorations` 會得到頂部具拖曳區域的無邊框視窗，Mac 支援手勢滑動返回與前進，也可以拖曳標題列移動視窗，選單列裡也有導覽、縮放與視窗控制等選項。
+雙擊標題列可以切換全螢幕，Mac 支援手勢滑動返回與前進，也可以拖曳標題列移動視窗，選單列裡也有導覽、縮放與視窗控制等選項。
 
 </details>
 
@@ -175,7 +149,11 @@
 
 ```bash
 # 安裝 Pake CLI
-pnpm install -g pake-cli
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git Pake-mac
+cd Pake-mac
+pnpm install --frozen-lockfile
+pnpm run cli:build
+npm link
 
 # 基本用法，自動取得網站圖示
 pake https://github.com --name GitHub
@@ -190,18 +168,19 @@ pake https://weekly.tw93.fun --name Weekly --icon https://cdn.tw93.fun/pake/week
 
 ```text
 # Claude Code
-/plugin marketplace add tw93/Pake
+/plugin marketplace add davidscottpope-gif/Pake
 /plugin install pake@pake
 
 # Codex
-codex plugin marketplace add tw93/Pake
+codex plugin marketplace add davidscottpope-gif/Pake
 codex plugin add pake@pake
 ```
 
 把下面這段複製給你的 AI agent 即可開始：
 
 ```text
-用 Pake（npm i -g pake-cli）把網頁打包成桌面應用。先閱讀 https://unpkg.com/pake-cli@latest/llms.txt，執行 pake 時始終加上 --json 並把 stdout 解析為單個 JSON 物件。把 <url-or-local-dist> 打包成名為 <AppName> 的應用。
+使用這個 Mac 專用分支的原始碼打包網頁。先閱讀連結中的 llms.txt，執行 pake 時加 --json，並把 stdout 解析為單個 JSON 物件。
+https://github.com/davidscottpope-gif/Pake/blob/feature/macos-only-ts-js-cleanup/llms.txt
 ```
 
 ## 自訂開發
@@ -232,7 +211,7 @@ Pake 的發展離不開這些優秀的貢獻者 ❤️
 ## 支持
 
 - 購買我做的 Mac 清理應用 [Mole for Mac](https://mole.fit)，是對我最直接的支持
-- 如果你喜歡 Pake，可以在 GitHub 給一顆 Star，[推薦](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20一個指令把任意網頁打包成桌面應用，支援%20macOS、Windows%20與%20Linux) 給志同道合的朋友，遇到問題或發現適合做成桌面 App 的網頁，也歡迎提 issue 和 PR
+- 如果你喜歡 Pake，可以在 GitHub 給一顆 Star，[推薦](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20一個指令把任意網頁打包成桌面應用，僅支援%20macOS) 給志同道合的朋友，遇到問題或發現適合做成桌面 App 的網頁，也歡迎提 issue 和 PR
 - 我養了兩隻貓，一隻叫湯圓，一隻叫可樂，如果 Pake 讓你的生活更美好，可以給她們<a href="https://cats.tw93.fun?name=Pake" target="_blank">餵罐頭 🥩</a>
 
 <details>

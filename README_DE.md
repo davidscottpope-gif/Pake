@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/tw93/Pake/main/assets/logo.png" width="138" />
   <h1>Pake</h1>
-  <p><b>Verwandeln Sie jede Webseite mit einem einzigen Befehl in eine Desktop-App. Unterstützt macOS, Windows und Linux.</b></p>
+  <p><b>Verwandeln Sie jede Webseite mit einem einzigen Befehl in eine Desktop-App. Nur macOS (Mac-only-Fork).</b></p>
   <p><a href="README.md">English</a> · <a href="README_CN.md">中文</a> · <a href="README_TW.md">繁體</a> · <a href="README_JA.md">日本語</a> · <a href="README_KR.md">한국어</a> · Deutsch · <a href="README_FR.md">Français</a></p>
   <a href="https://twitter.com/HiTw93" target="_blank"><img alt="twitter" src="https://img.shields.io/badge/follow-Tw93-red?style=flat-square&logo=Twitter"></a>
   <a href="https://t.me/+9f9gf4ZrFSQ2OWVl" target="_blank"><img alt="telegram" src="https://img.shields.io/badge/chat-telegram-blueviolet?style=flat-square&logo=Telegram"></a>
@@ -26,17 +26,15 @@
 
 ## Beliebte Pakete herunterladen
 
+> Persönlicher Mac-only-Fork von [tw93/Pake](https://github.com/tw93/Pake): nur macOS-Apps. Die Linux- und Windows-Builds wurden entfernt. Die Download-Links unten verweisen auf die vorgefertigten macOS-`.dmg`-Beispiele des Upstream-Projekts, nicht auf Releases dieses Forks.
+
 <table>
     <tr>
         <td>WeRead
             <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x86_64.deb">Linux</a>
         </td>
         <td>Twitter
             <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -46,13 +44,9 @@
     <tr>
         <td>Grok
             <a href="https://github.com/tw93/Pake/releases/latest/download/Grok.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x86_64.deb">Linux</a>
         </td>
         <td>DeepSeek
             <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -62,13 +56,9 @@
     <tr>
         <td>ChatGPT
             <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x86_64.deb">Linux</a>
         </td>
         <td>Gemini
             <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -78,13 +68,9 @@
     <tr>
       <td>YouTube Music
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x86_64.deb">Linux</a>
       </td>
       <td>YouTube
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x86_64.deb">Linux</a>
       </td>
     </tr>
     <tr>
@@ -94,13 +80,9 @@
     <tr>
         <td>LiZhi
             <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x86_64.deb">Linux</a>
         </td>
         <td>ProgramMusic
             <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -110,13 +92,9 @@
     <tr>
         <td>Excalidraw
             <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x86_64.deb">Linux</a>
         </td>
         <td>XiaoHongShu
             <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -126,13 +104,9 @@
     <tr>
         <td>Notion
             <a href="https://github.com/tw93/Pake/releases/latest/download/Notion.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x86_64.deb">Linux</a>
         </td>
         <td>Flomo
             <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -147,25 +121,25 @@
 
 <br/>
 
-| Mac                                                       | Windows/Linux                                       | Funktion                           |
-| --------------------------------------------------------- | --------------------------------------------------- | ---------------------------------- |
-| <kbd>⌘</kbd> + <kbd>[</kbd>                               | <kbd>Ctrl</kbd> + <kbd>[</kbd>                      | Zurück zur vorherigen Seite        |
-| <kbd>⌘</kbd> + <kbd>]</kbd>                               | <kbd>Ctrl</kbd> + <kbd>]</kbd>                      | Vorwärts zur nächsten Seite        |
-| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↑</kbd>                      | Ganz nach oben scrollen            |
-| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↓</kbd>                      | Ganz nach unten scrollen           |
-| <kbd>⌘</kbd> + <kbd>R</kbd>                               | <kbd>Ctrl</kbd> + <kbd>R</kbd>                      | Seite neu laden                    |
-| <kbd>⌘</kbd> + <kbd>W</kbd>                               | <kbd>Ctrl</kbd> + <kbd>W</kbd>                      | Fenster ausblenden (nicht beenden) |
-| <kbd>⌘</kbd> + <kbd>-</kbd>                               | <kbd>Ctrl</kbd> + <kbd>-</kbd>                      | Seite verkleinern                  |
-| <kbd>⌘</kbd> + <kbd>=</kbd>                               | <kbd>Ctrl</kbd> + <kbd>=</kbd>                      | Seite vergrößern                   |
-| <kbd>⌘</kbd> + <kbd>0</kbd>                               | <kbd>Ctrl</kbd> + <kbd>0</kbd>                      | Zoom zurücksetzen                  |
-| <kbd>⌘</kbd> + <kbd>L</kbd>                               | <kbd>Ctrl</kbd> + <kbd>L</kbd>                      | Aktuelle URL kopieren              |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>   | Einfügen und Stil anpassen         |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>   | Zur Startseite                     |
-| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>   | Entwicklertools öffnen (nur Debug) |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Del</kbd> | Cache leeren und neu starten       |
-| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | <kbd>F11</kbd>                                      | Vollbild umschalten                |
+| Mac                                                       | Funktion                           |
+| --------------------------------------------------------- | ---------------------------------- |
+| <kbd>⌘</kbd> + <kbd>[</kbd>                               | Zurück zur vorherigen Seite        |
+| <kbd>⌘</kbd> + <kbd>]</kbd>                               | Vorwärts zur nächsten Seite        |
+| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | Ganz nach oben scrollen            |
+| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | Ganz nach unten scrollen           |
+| <kbd>⌘</kbd> + <kbd>R</kbd>                               | Seite neu laden                    |
+| <kbd>⌘</kbd> + <kbd>W</kbd>                               | Fenster ausblenden (nicht beenden) |
+| <kbd>⌘</kbd> + <kbd>-</kbd>                               | Seite verkleinern                  |
+| <kbd>⌘</kbd> + <kbd>=</kbd>                               | Seite vergrößern                   |
+| <kbd>⌘</kbd> + <kbd>0</kbd>                               | Zoom zurücksetzen                  |
+| <kbd>⌘</kbd> + <kbd>L</kbd>                               | Aktuelle URL kopieren              |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | Einfügen und Stil anpassen         |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | Zur Startseite                     |
+| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | Entwicklertools öffnen (nur Debug) |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | Cache leeren und neu starten       |
+| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | Vollbild umschalten                |
 
-Durch Doppelklick auf die Titelleiste lässt sich das Vollbild ebenfalls umschalten. Unter Windows und Linux ermöglicht `--hide-window-decorations` rahmenlose Fenster mit oberem Ziehbereich. Auf dem Mac funktionieren Wischgesten für Vor und Zurück, die Titelleiste lässt sich zum Verschieben des Fensters ziehen, und die Menüleiste bietet Navigation, Zoom und Fenstersteuerung.
+Durch Doppelklick auf die Titelleiste lässt sich das Vollbild ebenfalls umschalten. Auf dem Mac funktionieren Wischgesten für Vor und Zurück, die Titelleiste lässt sich zum Verschieben des Fensters ziehen, und die Menüleiste bietet Navigation, Zoom und Fenstersteuerung.
 
 </details>
 
@@ -175,7 +149,11 @@ Durch Doppelklick auf die Titelleiste lässt sich das Vollbild ebenfalls umschal
 
 ```bash
 # Pake CLI installieren
-pnpm install -g pake-cli
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git Pake-mac
+cd Pake-mac
+pnpm install --frozen-lockfile
+pnpm run cli:build
+npm link
 
 # Standardnutzung, Website-Icon automatisch abrufen
 pake https://github.com --name GitHub
@@ -190,18 +168,19 @@ Pake in Skripten oder mit AI-Agenten nutzen? Übergeben Sie `--json` für maschi
 
 ```text
 # Claude Code
-/plugin marketplace add tw93/Pake
+/plugin marketplace add davidscottpope-gif/Pake
 /plugin install pake@pake
 
 # Codex
-codex plugin marketplace add tw93/Pake
+codex plugin marketplace add davidscottpope-gif/Pake
 codex plugin add pake@pake
 ```
 
 Übergeben Sie folgenden Prompt an Ihren AI-Agenten:
 
 ```text
-Verwende Pake (npm i -g pake-cli), um Webseiten als Desktop-Apps zu paketieren. Lies zuerst https://unpkg.com/pake-cli@latest/llms.txt; führe pake immer mit --json aus und parse stdout als einzelnes JSON-Objekt. Paketiere <url-or-local-dist> als App namens <AppName>.
+Verwenden Sie den Quellbranch dieses Mac-only-Forks. Lesen Sie die verlinkte llms.txt, führen Sie pake mit --json aus und lesen Sie stdout als ein JSON-Objekt.
+https://github.com/davidscottpope-gif/Pake/blob/feature/macos-only-ts-js-cleanup/llms.txt
 ```
 
 ## Entwicklung
@@ -232,7 +211,7 @@ Pake wäre ohne diese großartigen Mitwirkenden nicht möglich ❤️
 ## Unterstützung
 
 - Die direkteste Unterstützung ist der Kauf meiner Mac-Bereinigungs-App [Mole for Mac](https://mole.fit)
-- Wenn Pake Ihnen geholfen hat, geben Sie dem Projekt einen Stern auf GitHub, [empfehlen Sie es weiter](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20Verwandeln%20Sie%20jede%20Webseite%20mit%20einem%20einzigen%20Befehl%20in%20eine%20Desktop-App.%20Unterst%C3%BCtzt%20macOS,%20Windows%20und%20Linux) oder öffnen Sie ein Issue oder einen PR, auch für Websites, die sich gut als Desktop-App eignen
+- Wenn Pake Ihnen geholfen hat, geben Sie dem Projekt einen Stern auf GitHub, [empfehlen Sie es weiter](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20Verwandeln%20Sie%20jede%20Webseite%20mit%20einem%20einzigen%20Befehl%20in%20eine%20Desktop-App.%20Nur%20macOS) oder öffnen Sie ein Issue oder einen PR, auch für Websites, die sich gut als Desktop-App eignen
 - Ich habe zwei Katzen, TangYuan und Coke, und wenn Pake Ihren Alltag bereichert hat, spendieren Sie ihnen gerne eine <a href="https://cats.tw93.fun?name=Pake" target="_blank">Dose Futter 🥩</a>
 
 <details>

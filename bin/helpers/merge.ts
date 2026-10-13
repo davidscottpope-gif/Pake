@@ -33,9 +33,6 @@ export function buildWindowConfigOverrides(
     maximize: options.maximize,
     resizable: options.resizable ?? true,
     hide_title_bar: options.hideTitleBar,
-    // Windows/Linux only. The Rust config still reads these two keys, so
-    // they stay in pake.json with fixed values until the Rust side is cleaned up.
-    hide_window_decorations: false,
     activation_shortcut: options.activationShortcut,
     always_on_top: options.alwaysOnTop,
     dark_mode: options.darkMode,
@@ -43,7 +40,6 @@ export function buildWindowConfigOverrides(
     hide_on_close: options.hideOnClose ?? true,
     incognito: options.incognito,
     restore_last_url: options.restoreLastUrl,
-    password_autosave: false,
     title: options.title,
     enable_wasm: options.wasm,
     enable_drag_drop: options.enableDragDrop,
@@ -223,9 +219,9 @@ export async function resolveSystemTrayIconPath(
 
   try {
     const iconExt = path.extname(systemTrayIcon).toLowerCase();
-    if (iconExt !== '.png' && iconExt !== '.ico') {
+    if (iconExt !== '.png') {
       logger.warn(
-        `✼ System tray icon must be .ico or .png, but you provided ${iconExt}.`,
+        `✼ System tray icon must be .png, but you provided ${iconExt}.`,
       );
       logger.warn(`✼ Default system tray icon will be used.`);
       return defaultTrayIconPath;

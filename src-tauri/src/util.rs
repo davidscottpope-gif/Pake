@@ -48,15 +48,12 @@ pub struct RuntimeApp {
     pub product_name: String,
 }
 
-/// macOS keeps overrides in `Contents/Resources/pake-runtime`; other platforms
-/// use `pake-runtime` next to the executable.
+/// macOS keeps overrides in `Contents/Resources/pake-runtime`.
 #[cfg_attr(not(feature = "runtime-template"), allow(dead_code))]
 fn runtime_dir_for_exe(exe: &Path) -> Option<PathBuf> {
     let exe_dir = exe.parent()?;
-    #[cfg(target_os = "macos")]
+
     let base = exe_dir.parent()?.join("Resources");
-    #[cfg(not(target_os = "macos"))]
-    let base = exe_dir.to_path_buf();
     Some(base.join(RUNTIME_DIR))
 }
 
@@ -99,7 +96,7 @@ fn apply_runtime_override(
             app_path.display()
         ));
     }
-    // The identifier names per-app folders and the Windows AppUserModelID.
+    // The identifier names per-app folders.
     if !is_valid_identifier(&app.identifier) {
         return Err(format!(
             "{} has an invalid identifier {:?}",
@@ -135,8 +132,8 @@ fn is_valid_identifier(id: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || *b == b'.' || *b == b'-')
 }
 
-/// Folder under the config dir that holds the WebView profile (WebView2's
-/// EBWebView on Windows). CLI apps keep their product-name folder; a runtime
+/// Folder under the config dir that holds the WebView profile.
+/// CLI apps keep their product-name folder; a runtime
 /// app uses its identifier so a rename keeps its logins and a generated name
 /// cannot land in another program's folder.
 pub fn data_dir_name(pake_config: &PakeConfig, tauri_config: &Config) -> String {
@@ -147,27 +144,6 @@ pub fn data_dir_name(pake_config: &PakeConfig, tauri_config: &Config) -> String 
             .product_name
             .clone()
             .unwrap_or_else(|| "pake".to_string())
-    }
-}
-
-/// The Windows AppUserModelID a runtime app sets before creating windows, so
-/// a shortcut carrying the identifier groups with the running window and
-/// toasts (sent under the identifier) are attributed to it. CLI apps keep the
-/// shell's default.
-#[cfg_attr(not(windows), allow(dead_code))]
-pub fn app_user_model_id(runtime_app: Option<&RuntimeApp>) -> Option<&str> {
-    runtime_app.map(|app| app.identifier.as_str())
-}
-
-/// Must run before any window exists; the shell reads the ID at window creation.
-#[cfg(windows)]
-pub fn set_app_user_model_id(id: &str) {
-    use windows_sys::Win32::UI::Shell::SetCurrentProcessExplicitAppUserModelID;
-    let wide: Vec<u16> = id.encode_utf16().chain(std::iter::once(0)).collect();
-    // SAFETY: `wide` is a NUL-terminated UTF-16 buffer that outlives the call.
-    let result = unsafe { SetCurrentProcessExplicitAppUserModelID(wide.as_ptr()) };
-    if result < 0 {
-        eprintln!("[Pake] Could not set the AppUserModelID {id}: HRESULT {result:#010x}");
     }
 }
 
@@ -340,12 +316,8 @@ pub fn sanitize_download_filename(filename: &str) -> String {
         return "download".to_string();
     };
 
-    // A colon can retain a Windows drive prefix or alternate data stream even
-    // after separators have been removed. Colons are ordinary names on Unix.
-    if candidate == "."
-        || candidate == ".."
-        || (cfg!(target_os = "windows") && candidate.contains(':'))
-    {
+    // Colons are valid macOS filename characters.
+    if candidate == "." || candidate == ".." {
         "download".to_string()
     } else {
         candidate.to_string()
@@ -474,13 +446,6 @@ mod tests {
     fn expand_download_dir_rejects_home_replacement() {
         let home = temp_path("home");
         assert!(expand_download_dir("~//tmp", Some(&home)).is_err());
-        #[cfg(target_os = "windows")]
-        for value in ["~/C:\\other", "~/C:other", "~/\\other"] {
-            assert!(
-                expand_download_dir(value, Some(&home)).is_err(),
-                "accepted {value}"
-            );
-        }
         fs::remove_dir_all(home.parent().unwrap()).unwrap();
     }
 
@@ -567,24 +532,6 @@ mod tests {
         }
     }
 
-    #[cfg(target_os = "windows")]
-    #[test]
-    fn sanitize_download_filename_rejects_windows_drive_prefixes_and_streams() {
-        for filename in [
-            "C:payload.txt",
-            "C:",
-            "report.txt:payload",
-            "..\\D:payload.txt",
-        ] {
-            assert_eq!(
-                sanitize_download_filename(filename),
-                "download",
-                "{filename}"
-            );
-        }
-    }
-
-    #[cfg(not(target_os = "windows"))]
     #[test]
     fn sanitize_download_filename_preserves_colons_on_unix() {
         assert_eq!(
@@ -643,7 +590,6 @@ mod tests {
 
     const RUNTIME_APP: &str = r#"{"identifier":"com.pake.a1b2c3","productName":"Runtime Probe"}"#;
 
-    #[cfg(target_os = "macos")]
     #[test]
     fn runtime_dir_lives_in_bundle_resources_on_macos() {
         assert_eq!(
@@ -651,16 +597,6 @@ mod tests {
             Some(PathBuf::from(
                 "/Applications/Probe.app/Contents/Resources/pake-runtime"
             ))
-        );
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    #[test]
-    fn runtime_dir_lives_next_to_executable() {
-        let exe = temp_path("pake");
-        assert_eq!(
-            runtime_dir_for_exe(&exe),
-            Some(exe.parent().unwrap().join("pake-runtime"))
         );
     }
 
@@ -694,7 +630,7 @@ mod tests {
         runtime["windows"][0]["url"] = "https://example.com/app".into();
         runtime["system_tray_path"] = "tray.png".into();
         // Optional fields fall back to their serde defaults.
-        for key in ["password_autosave", "new_window", "enable_find"] {
+        for key in ["new_window", "enable_find"] {
             runtime["windows"][0].as_object_mut().unwrap().remove(key);
         }
         runtime.as_object_mut().unwrap().remove("download_dir");
@@ -817,15 +753,5 @@ mod tests {
         ] {
             assert!(!is_valid_identifier(id), "{id}");
         }
-    }
-
-    #[test]
-    fn app_user_model_id_is_set_only_for_runtime_apps() {
-        assert_eq!(app_user_model_id(None), None);
-        let app = RuntimeApp {
-            identifier: "com.pake.a1b2c3".into(),
-            product_name: "Runtime Probe".into(),
-        };
-        assert_eq!(app_user_model_id(Some(&app)), Some("com.pake.a1b2c3"));
     }
 }

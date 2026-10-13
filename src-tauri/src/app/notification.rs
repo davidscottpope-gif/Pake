@@ -8,7 +8,7 @@
 //!
 //! macOS therefore delivers notifications itself through
 //! `NSUserNotificationCenter` with a delegate and routes the click back to the
-//! originating webview. Other platforms keep the plugin path, and the page falls
+//! originating webview. The plugin path remains a fallback, and the page falls
 //! back to the focus heuristic in `inject/event.js`.
 
 use std::sync::Mutex;
@@ -125,19 +125,11 @@ fn validate_id(id: &str) -> Result<(), String> {
 /// Set up the platform click callback. Runs on the main thread during setup so
 /// the availability probe is a plain synchronous check later on.
 pub fn init_native_click(app: &AppHandle) {
-    #[cfg(target_os = "macos")]
     macos::init(app);
-    #[cfg(not(target_os = "macos"))]
-    let _ = app;
 }
 
 fn native_click_ready() -> bool {
-    #[cfg(target_os = "macos")]
     return macos::native_click_ready();
-    #[cfg(not(target_os = "macos"))]
-    {
-        false
-    }
 }
 
 pub fn send(
@@ -157,7 +149,6 @@ pub fn send(
         });
     }
 
-    #[cfg(target_os = "macos")]
     if macos::deliver(app, window.label(), params)? {
         return Ok(NotificationOutcome {
             native_click: true,
@@ -180,25 +171,19 @@ pub fn send(
     })
 }
 
-/// Withdraw only the calling webview's notification. Other platforms retain
-/// their existing delivery path, which does not expose a withdrawal handle.
+/// Withdraw only the calling webview's notification.
 pub fn close(app: &AppHandle, window: &WebviewWindow, id: &str) -> Result<(), String> {
     validate_id(id)?;
-    #[cfg(target_os = "macos")]
+
     return macos::withdraw(app, window.label(), id);
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = (app, window);
-        Ok(())
-    }
 }
 
 /// Reveal the window the notification came from and hand the click to the page.
 ///
 /// A hidden or minimized window is exactly the case where a notification click
-/// matters most, so this goes through the same show + `reapply_window_icon` +
+/// matters most, so this goes through the same show +
 /// focus sequence as every other hidden-to-visible path (#1323).
-#[cfg(target_os = "macos")]
+
 fn dispatch_click(app: &AppHandle, window_label: &str, id: &str) {
     use tauri::Manager;
 
@@ -208,7 +193,6 @@ fn dispatch_click(app: &AppHandle, window_label: &str, id: &str) {
 
     let _ = window.unminimize();
     let _ = window.show();
-    crate::app::window::reapply_window_icon(&window);
     let _ = window.set_focus();
 
     // `id` passed `validate_id`, so it cannot break out of the string literal.
@@ -217,7 +201,6 @@ fn dispatch_click(app: &AppHandle, window_label: &str, id: &str) {
     ));
 }
 
-#[cfg(target_os = "macos")]
 mod macos {
     // The whole NSUserNotification family is deprecated in favour of
     // UserNotifications.framework, which needs a provisioned bundle and a

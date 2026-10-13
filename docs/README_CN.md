@@ -21,7 +21,7 @@ Pake 应用打包与开发的参考指南。
 
 ## 相关资源
 
-- [主仓库](https://github.com/tw93/Pake)
+- [主仓库](https://github.com/davidscottpope-gif/Pake/tree/feature/macos-only-ts-js-cleanup)
 - [发布页面](https://github.com/tw93/Pake/releases)
 - [讨论区](https://github.com/tw93/Pake/discussions)
 - [问题反馈](https://github.com/tw93/Pake/issues)

@@ -10,35 +10,17 @@
 
 ## 安装
 
-**推荐方式 (pnpm)：**
+这个个人 Mac 专用分支不是 npm 上的跨平台 `pake-cli` 包。请在 macOS 上从此分支构建：
 
 ```bash
-pnpm install -g pake-cli
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git Pake-mac
+cd Pake-mac
+pnpm install --frozen-lockfile
+pnpm run cli:build
+npm link
 ```
 
-**备选方式 (npm)：**
-
-```bash
-npm install -g pake-cli
-```
-
-**如果遇到权限问题：**
-
-```bash
-# 使用 npx 运行，无需全局安装
-npx pake-cli [url] [选项]
-
-# 或者永久修复 npm 权限
-npm config set prefix ~/.npm-global
-echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
-```
-
-**前置条件：**
-
-- Node.js ≥20.9.0
-- Rust ≥1.85.0（缺失时会提示安装，非交互或 `--json` 模式下直接报 `ENV_MISSING` 错误）
-- **macOS/Linux**：`curl`、`wget`、`file` 和 `tar`（用于依赖管理）
+需要 Node.js 22、pnpm 10.26.2、Rust 1.95.0 和 Xcode Command Line Tools。这不会发布到 npm。
 
 ## 快速开始
 
@@ -83,26 +65,24 @@ pake ./dist --name MyTool
 
 常用选项先看下表，`pake --help` 能列出全部选项，后面逐个给出完整说明。
 
-| 选项                        | 描述                                 | 示例                                           |
-| --------------------------- | ------------------------------------ | ---------------------------------------------- |
-| `--name`                    | 应用程序名称                         | `--name "Weekly"`                              |
-| `--icon`                    | 自定义图标（可选，自动获取网站图标） | `--icon https://cdn.tw93.fun/pake/weekly.icns` |
-| `--width`                   | 窗口宽度（默认：1200px）             | `--width 1400`                                 |
-| `--height`                  | 窗口高度（默认：780px）              | `--height 900`                                 |
-| `--hide-title-bar`          | 隐藏标题栏（仅 macOS）               | `--hide-title-bar`                             |
-| `--hide-window-decorations` | 隐藏原生窗口装饰（仅 Windows/Linux） | `--hide-window-decorations`                    |
-| `--debug`                   | 启用开发者工具                       | `--debug`                                      |
-| `--config`                  | 从 JSON 配置文件读取选项             | `--config app.json`                            |
-| `--json`                    | stdout 输出机器可读结果（自动化用）  | `--json`                                       |
-| `--help`                    | 显示全部 CLI 选项                    | `--help`                                       |
-| `--version`                 | 显示 CLI 版本                        | `--version`                                    |
+| 选项               | 描述                                 | 示例                                           |
+| ------------------ | ------------------------------------ | ---------------------------------------------- |
+| `--name`           | 应用程序名称                         | `--name "Weekly"`                              |
+| `--icon`           | 自定义图标（可选，自动获取网站图标） | `--icon https://cdn.tw93.fun/pake/weekly.icns` |
+| `--width`          | 窗口宽度（默认：1200px）             | `--width 1400`                                 |
+| `--height`         | 窗口高度（默认：780px）              | `--height 900`                                 |
+| `--hide-title-bar` | 隐藏标题栏（仅 macOS）               | `--hide-title-bar`                             |
+| `--debug`          | 启用开发者工具                       | `--debug`                                      |
+| `--config`         | 从 JSON 配置文件读取选项             | `--config app.json`                            |
+| `--json`           | stdout 输出机器可读结果（自动化用）  | `--json`                                       |
+| `--help`           | 显示全部 CLI 选项                    | `--help`                                       |
+| `--version`        | 显示 CLI 版本                        | `--version`                                    |
 
 #### [name]
 
 指定应用程序的名称，未指定时会提示输入，最好使用英文，名称可以带空格，不同平台的命名规范会自动处理：
 
-- **Windows/macOS**：保持空格和大小写（如 `"Google Translate"`）
-- **Linux**：自动转换为小写并用连字符连接（如 `"google-translate"`）
+- **macOS**：保持空格和大小写（如 `"Google Translate"`）
 
 ```shell
 --name <string>
@@ -119,8 +99,6 @@ pake ./dist --name MyTool
 支持本地或远程文件，自动转换为平台所需格式：
 
 - macOS：`.icns` 格式
-- Windows：`.ico` 格式
-- Linux：`.png` 格式
 
 ```shell
 --icon <path>
@@ -184,14 +162,6 @@ pake https://github.com --name GitHub
 --hide-title-bar
 ```
 
-#### [hide-window-decorations]
-
-在 Windows 和 Linux 上隐藏原生窗口装饰，移除标题栏和窗口控制按钮，并在顶部提供拖拽区域以移动窗口，可使用 `F11` 切换原生全屏，在 macOS 上会被忽略，默认为 `false`。
-
-```shell
---hide-window-decorations
-```
-
 #### [fullscreen]
 
 设置应用启动时自动全屏，默认为 `false`。
@@ -234,13 +204,11 @@ pake https://github.com --name GitHub
 
 #### [dark-mode]
 
-强制打包应用使用深色模式（支持 macOS、Windows 和 Linux），默认为 `false`。
+强制打包应用使用深色模式（macOS），默认为 `false`。
 
 ```shell
 --dark-mode
 ```
-
-在 Linux 上深色模式经由 WebKitGTK 实现，页面是否真正渲染为暗色还取决于 WebKitGTK 是否尊重窗口主题以及站点是否实现了 `prefers-color-scheme: dark`。
 
 #### [disabled-web-shortcuts]
 
@@ -322,65 +290,18 @@ pake https://github.com --name GitHub
 
 指定构建目标架构或输出格式：
 
-- **Linux**：`deb`, `appimage`, `rpm`, `zst`, `deb-arm64`, `appimage-arm64`, `rpm-arm64`, `zst-arm64`（默认按发行版自适应：Debian/Ubuntu 为 `deb, appimage`，Fedora/RHEL/openSUSE 等为 `rpm, appimage`）
-- **Windows**：`x64`, `arm64`（未指定时自动检测）
 - **macOS**：`intel`, `apple`, `universal`（架构，未指定时自动检测）；`app`, `dmg`（输出格式，默认为 `dmg`）
 
 ```shell
 --targets <target>
 
 # 示例：
---targets arm64          # Windows ARM64
---targets x64            # Windows x64
 --targets universal      # macOS 通用版本（Intel + Apple Silicon）
 --targets apple          # 仅 macOS Apple Silicon
 --targets intel          # 仅 macOS Intel
 --targets app            # 仅 macOS 应用包（.app，跳过 DMG 打包）
 --targets dmg            # macOS DMG 安装包（默认）
---targets deb            # Linux DEB 包（x64）
---targets rpm            # Linux RPM 包（x64）
---targets appimage       # Linux AppImage（x64）
---targets zst            # Linux Arch 包（x64 .pkg.tar.zst）
---targets deb-arm64      # Linux DEB 包（ARM64）
---targets rpm-arm64      # Linux RPM 包（ARM64）
---targets appimage-arm64 # Linux AppImage（ARM64）
---targets zst-arm64      # Linux Arch 包（ARM64 .pkg.tar.zst）
 ```
-
-**Linux ARM64 注意事项**：
-
-- 交叉编译需要安装 `gcc-aarch64-linux-gnu` 并配置相应环境变量
-- ARM64 支持覆盖 Linux 手机（postmarketOS、Ubuntu Touch）、树莓派及其他 ARM64 Linux 设备
-- `--targets appimage-arm64` 可生成兼顾多种 ARM64 Linux 发行版的便携格式
-- 基于 Arch Linux 的系统使用 `--targets zst` 可直接生成 `.pkg.tar.zst`，需预先安装 `binutils`（提供 `ar`）和 `libarchive`（提供 `bsdtar`）
-
-#### [windows-toolchain]
-
-选择 Windows 构建使用的 Rust 工具链，仅适用于 Windows，其他平台忽略此选项。
-
-- `msvc`（默认）：Tauri 推荐工具链，需安装 [Visual Studio Build Tools](https://tauri.app/start/prerequisites/#windows)（勾选“使用 C++ 的桌面开发”工作负载）。
-- `gnu`：改用 MinGW/MSYS2 工具链构建，适合已安装 Rust 和 GNU 工具链（例如通过 [MSYS2](https://www.msys2.org/)）但没有安装 Visual Studio Build Tools 的机器。仅支持 `x64`（MSYS2 未提供该目标的 ARM64 GCC 工具链）。需要 `PATH` 中包含 `gcc`、`ld` 和 `dlltool`。
-
-```shell
---windows-toolchain <msvc|gnu>
-
-# 示例：使用 MinGW/MSYS2 工具链构建
---windows-toolchain gnu
-```
-
-若未检测到 MSVC 但存在可用 GNU 工具链，Pake 会提示使用 `--windows-toolchain gnu`，避免在链接阶段报出晦涩错误，使用 `gnu` 不影响系统全局 Rust 环境设置，仅作用于当次构建进程。
-
-使用 `gnu` 时，可执行文件会在运行时加载 `WebView2Loader.dll`，而不是像 MSVC 那样静态链接。MSI 安装包已包含该文件；`--keep-binary` 会把它复制到 `AppName.exe` 旁边，两者要放在一起，否则原始可执行文件无法启动。
-
-#### [no-bundle]
-
-跳过打包，只输出编译好的可执行文件，仅 Linux 可用，适用于 Fedora、RHEL、Oracle Linux 等 RPM 系发行版，这些系统上原生打包器可能在打包阶段中止，用此选项仍能拿到可运行的二进制。
-
-```shell
-pake https://github.com --name GitHub --no-bundle
-```
-
-裸可执行文件会复制到当前目录，命名为 `<name>-binary`，在非 Linux 平台此选项会被忽略。
 
 #### [user-agent]
 
@@ -400,7 +321,7 @@ pake https://github.com --name GitHub --no-bundle
 
 #### [system-tray-icon]
 
-设置托盘图标，仅在启用系统托盘时有效，图标必须为 `.ico` 或 `.png` 格式，尺寸应在 32x32 到 256x256 像素之间。
+设置托盘图标，仅在启用系统托盘时有效，图标必须为 `.png` 格式，尺寸应在 32x32 到 256x256 像素之间。
 
 ```shell
 --system-tray-icon <path>
@@ -408,14 +329,14 @@ pake https://github.com --name GitHub --no-bundle
 
 #### [hide-on-close]
 
-点击窗口关闭按钮时隐藏窗口而非退出应用，macOS 默认为 `true`，Windows/Linux 默认为 `false`。
+点击窗口关闭按钮时隐藏窗口而非退出应用，默认为 `true`。
 
 ```shell
 # 关闭时隐藏（macOS 默认行为）
 --hide-on-close
 --hide-on-close true
 
-# 立即退出应用（Windows/Linux 默认行为）
+# 立即退出应用
 --hide-on-close false
 ```
 
@@ -434,7 +355,7 @@ pake https://github.com --name GitHub --show-system-tray --start-to-tray
 
 #### [title]
 
-设置窗口标题栏文本，macOS 未指定时不展示标题，Windows/Linux 默认回退为应用名称。
+设置窗口标题栏文本，macOS 未指定时不展示标题。
 
 ```shell
 --title <string>
@@ -458,14 +379,6 @@ pake https://www.rememberthemilk.com --name RememberTheMilk --no-restore-last-ur
 
 ```shell
 --incognito
-```
-
-#### [password-autosave]
-
-在 Windows 上启用 WebView2 原生密码保存提示，凭据存储于应用专有配置文件中，不与 Edge/Chrome 共享，默认为 `false`。macOS 与 Linux 忽略此选项；`--incognito` 模式下自动停用。关闭后不会保存新密码，也不会弹出保存或更新提示，但已有密码仍可能自动填充，包括使用同一配置文件的隐私窗口。
-
-```bash
---password-autosave
 ```
 
 #### [wasm]
@@ -492,7 +405,7 @@ pake https://planka.example.com --name PlankApp --enable-drag-drop
 
 #### [keep-binary]
 
-构建后保留免安装的独立运行文件，默认为 `false`，除各平台标准安装包外，还会在当前目录额外输出二进制（Unix 为 `AppName-binary`，Windows 为 `AppName.exe`），使用 `--windows-toolchain gnu` 时同步输出 `WebView2Loader.dll`。
+构建后保留免安装的独立运行文件，默认为 `false`，除各平台标准安装包外，还会在当前目录额外输出二进制（`AppName-binary`）。
 
 ```shell
 --keep-binary
@@ -522,7 +435,7 @@ pake https://github.com --name GitHub --install
 
 #### [camera]
 
-在 macOS 上申请摄像头使用权限（添加 `com.apple.security.device.camera` entitlement），默认为 `false`，Windows 和 Linux 忽略此选项，适用于视频通话、扫码等网页场景。
+在 macOS 上申请摄像头使用权限（添加 `com.apple.security.device.camera` entitlement），默认为 `false`，，适用于视频通话、扫码等网页场景。
 
 ```shell
 --camera
@@ -533,7 +446,7 @@ pake https://meet.google.com --name Meet --camera
 
 #### [microphone]
 
-在 macOS 上申请麦克风使用权限（添加 `com.apple.security.device.audio-input` entitlement），默认为 `false`，Windows 和 Linux 忽略此选项。
+在 macOS 上申请麦克风使用权限（添加 `com.apple.security.device.audio-input` entitlement），默认为 `false`，。
 
 ```shell
 --microphone
@@ -575,14 +488,6 @@ pake https://chat.example.com --name ChatApp --multi-instance
 pake https://chat.example.com --name ChatApp --multi-window
 ```
 
-#### [installer-language]
-
-设置 Windows 安装包界面语言，支持 `zh-CN`、`ja-JP` 等（详见 [Tauri 国际化文档](https://v2.tauri.app/distribute/windows-installer/#internationalization)），默认为 `en-US`。
-
-```shell
---installer-language <language>
-```
-
 #### [use-local-file]
 
 当 `url` 为本地文件路径时，如果启用此选项，则会递归地将 `url` 路径文件所在的文件夹及其所有子文件复制到 Pake 的静态文件夹。默认不启用。
@@ -621,11 +526,11 @@ pake ./my-app/index.html --name "my-app" --use-local-file
 pake https://example.com --name MyApp --download-dir '~/Documents/MyApp'
 ```
 
-支持绝对路径（如 Windows 的 `C:\Users\Alice\Documents\MyApp`）或带引号的 `~/路径`，引号可保留 `~`，让它在应用运行时指向使用者的主目录，而非打包机器的主目录。目录不存在时会在首次下载时创建；不支持相对路径，目录不可访问时下载会失败，不会悄悄改存到其他位置。JSON 配置对应字段为 `downloadDir`，修改已有应用的下载目录需重新打包。
+支持绝对路径（如 `/Users/alice/Documents/MyApp`）或带引号的 `~/路径`，引号可保留 `~`，让它在应用运行时指向使用者的主目录，而非打包机器的主目录。目录不存在时会在首次下载时创建；不支持相对路径，目录不可访问时下载会失败，不会悄悄改存到其他位置。JSON 配置对应字段为 `downloadDir`，修改已有应用的下载目录需重新打包。
 
 #### [proxy-url]
 
-为所有网络请求配置代理服务器，支持 HTTP、HTTPS 和 SOCKS5，在 Windows 与 Linux 上直接可用，macOS 需 macOS 14+。
+为所有网络请求配置代理服务器，支持 HTTP、HTTPS 和 SOCKS5，需 macOS 14+。
 
 ```shell
 --proxy-url http://127.0.0.1:7890
@@ -684,7 +589,7 @@ pake --config app.json
 
 退出码：`0` 成功、`2` 输入非法、`3` 构建失败、`4` 环境缺失或依赖安装失败（如未安装 Rust、依赖安装出错）、`1` 未预期错误。错误码：`INVALID_INPUT`、`ENV_MISSING`、`BUILD_FAILED`、`UNEXPECTED`，另有 `NETWORK`（预留，当前版本的网络失败会按所处阶段归入 `ENV_MISSING` 或 `BUILD_FAILED`）。
 
-Linux 多 target 构建（如 `--targets deb,appimage`）时，若单个 target 失败而其他成功，会记入 `warnings`，此时 `ok` 仍为 true，可以通过 `outputs[].format` 确认产物是否完整。
+多 target 构建时，若单个 target 失败而其他成功，会记入 `warnings`，此时 `ok` 仍为 true，可以通过 `outputs[].format` 确认产物是否完整。
 
 #### [ignore-certificate-errors]
 
@@ -700,24 +605,4 @@ Linux 多 target 构建（如 `--targets deb,appimage`）时，若单个 target 
 
 ```shell
 --new-window
-```
-
-## Docker 使用
-
-```shell
-# 在 Linux 上通过 Docker 运行 Pake CLI（AppImage 构建需 FUSE 权限）
-docker run --rm --privileged \
-    --device /dev/fuse \
-    --security-opt apparmor=unconfined \
-    -v YOUR_DIR:/output \
-    ghcr.io/tw93/pake \
-    <arguments>
-
-# 示例：
-docker run --rm --privileged \
-    --device /dev/fuse \
-    --security-opt apparmor=unconfined \
-    -v ./packages:/output \
-    ghcr.io/tw93/pake \
-    https://example.com --name MyApp --icon ./icon.png --targets appimage
 ```

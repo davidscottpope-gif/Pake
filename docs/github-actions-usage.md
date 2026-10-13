@@ -10,8 +10,8 @@ Build Pake apps online without installing development tools locally.
 
 ## Quick Steps
 
-1. [Fork this project](https://github.com/tw93/Pake/fork)
-2. In your fork, open the Actions tab, select `Build App With Pake CLI`, fill in the form (same parameters as [CLI options](cli-usage.md)), and click `Run Workflow`
+1. [Open this personal fork](https://github.com/davidscottpope-gif/Pake/tree/feature/macos-only-ts-js-cleanup)
+2. In the personal fork, open the Actions tab, select branch `feature/macos-only-ts-js-cleanup`, select `Build App With Pake CLI`, fill in the form (same parameters as [CLI options](cli-usage.md)), and click `Run Workflow`
 
    ![Actions Interface](https://raw.githubusercontent.com/tw93/static/main/pake/action.png)
 

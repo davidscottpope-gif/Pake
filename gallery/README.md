@@ -1,6 +1,6 @@
 # Pake Gallery
 
-Ready-made recipes for sites that work well as desktop apps. The Pake apps for Mac and Windows show them as a gallery, so picking one creates the app with the window size and options the recipe sets.
+Ready-made recipes for sites that work well as desktop apps. The Pake app for Mac show them as a gallery, so picking one creates the app with the window size and options the recipe sets.
 
 Pake is not affiliated with any of these sites. Names, logos and icons belong to their owners, and a recipe only describes how to open the public website in a window.
 
@@ -30,7 +30,7 @@ Pake is not affiliated with any of these sites. Names, logos and icons belong to
 - `name` and `description`: both `en` and `zh-Hans`. The description is one short line on what the site does, without a trailing period.
 - `icon`: the site's own apple-touch-icon or largest app icon over https, ideally 512 px. It is downloaded once when the apps are built, not at runtime.
 - `window`: only options that differ from Pake's defaults, using the window option names of `src-tauri/pake.json` (`width`, `height`, `hide_title_bar`, `incognito` and the others listed in the schema). `user_agent` is a single string used on every platform. Options a platform cannot apply are ignored there.
-- `platforms`: set to `["mac"]` or `["windows"]` only when the site is known not to work on the other one.
+- `platforms`: the only supported platform is `["mac"]`. Omit this field for Mac recipes.
 
 ## Proposing a site
 

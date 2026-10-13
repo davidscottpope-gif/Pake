@@ -27,9 +27,9 @@ test("native fullscreen preserves the player subtree and F11 exits its top layer
     const context = await browser.newContext();
     await context.addInitScript(
       ({ source }) => {
-        Object.defineProperty(navigator, "platform", { value: "Win32" });
+        Object.defineProperty(navigator, "platform", { value: "MacIntel" });
         Object.defineProperty(navigator, "userAgentData", {
-          value: { platform: "Windows" },
+          value: { platform: "macOS" },
         });
         window.pakeConfig = { url: "https://video.example.com/" };
         window.__TAURI__ = {
@@ -92,7 +92,7 @@ test("native fullscreen preserves the player subtree and F11 exits its top layer
   }
 });
 
-// The Linux/macOS polyfill must keep video and controls in the same subtree,
+// The macOS fullscreen bridge must keep video and controls in the same subtree,
 // including sites that request fullscreen on the document instead of the player.
 for (const target of ["html", "body", "#player"]) {
   test(`polyfill preserves player controls when ${target} requests fullscreen`, async () => {

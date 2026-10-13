@@ -48,7 +48,7 @@ body:
     attributes:
       label: System version
       description: >
-        Please provide the version of System you are using (e.g., macOS 14.2, Windows 11, Ubuntu 24.04).
+        Please provide the version of System you are using (e.g., macOS 14.2).
     validations:
       required: true
   - type: textarea

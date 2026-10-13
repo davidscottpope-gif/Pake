@@ -1,12 +1,11 @@
-#[cfg(target_os = "macos")]
 pub mod auth;
 pub mod config;
 pub mod invoke;
-#[cfg(target_os = "macos")]
+
 pub mod menu;
 pub mod navigation;
 pub mod notification;
 pub mod setup;
-#[cfg(target_os = "macos")]
+
 pub mod tab_bar;
 pub mod window;

@@ -2,7 +2,7 @@
  * Cross-platform file finding tests
  *
  * These tests verify that file finding logic works correctly
- * across different platforms (Windows, macOS, Linux).
+ * across different platforms on macOS.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -61,10 +61,10 @@ describe("Cross-platform file finding", () => {
     }
 
     it("should find exact filename matches", () => {
-      const testFile = path.join(tempDir, "test.deb");
+      const testFile = path.join(tempDir, "test.dmg");
       fs.writeFileSync(testFile, "test content");
 
-      const found = findFilesByPattern(tempDir, "test.deb");
+      const found = findFilesByPattern(tempDir, "test.dmg");
 
       expect(found).toHaveLength(1);
       expect(found[0]).toBe(testFile);
@@ -72,8 +72,8 @@ describe("Cross-platform file finding", () => {
 
     it("should find files with wildcard patterns", () => {
       const files = [
-        "myapp_1.0.0_amd64.deb",
-        "myapp_1.0.0_arm64.deb",
+        "myapp_1.0.0_amd64.dmg",
+        "myapp_1.0.0_arm64.dmg",
         "other.txt",
       ];
 
@@ -81,47 +81,47 @@ describe("Cross-platform file finding", () => {
         fs.writeFileSync(path.join(tempDir, file), "test");
       });
 
-      const found = findFilesByPattern(tempDir, "myapp_*.deb");
+      const found = findFilesByPattern(tempDir, "myapp_*.dmg");
 
       expect(found).toHaveLength(2);
       expect(found.map((f) => path.basename(f)).sort()).toEqual([
-        "myapp_1.0.0_amd64.deb",
-        "myapp_1.0.0_arm64.deb",
+        "myapp_1.0.0_amd64.dmg",
+        "myapp_1.0.0_arm64.dmg",
       ]);
     });
 
     it("should handle question mark wildcards", () => {
-      const files = ["app1.msi", "app2.msi", "app10.msi"];
+      const files = ["app1.dmg", "app2.dmg", "app10.dmg"];
 
       files.forEach((file) => {
         fs.writeFileSync(path.join(tempDir, file), "test");
       });
 
-      const found = findFilesByPattern(tempDir, "app?.msi");
+      const found = findFilesByPattern(tempDir, "app?.dmg");
 
       expect(found).toHaveLength(2);
       expect(found.map((f) => path.basename(f)).sort()).toEqual([
-        "app1.msi",
-        "app2.msi",
+        "app1.dmg",
+        "app2.dmg",
       ]);
     });
 
     it("should return empty array for non-existent directory", () => {
       const nonExistent = path.join(tempDir, "does-not-exist");
-      const found = findFilesByPattern(nonExistent, "*.deb");
+      const found = findFilesByPattern(nonExistent, "*.dmg");
 
       expect(found).toHaveLength(0);
     });
 
-    it("should work on Windows paths", () => {
-      // Test with backslashes (Windows-style paths)
-      const testFile = path.join(tempDir, "windows-test.msi");
+    it("should work on macOS paths", () => {
+      // Test with backslashes (macOS-style paths)
+      const testFile = path.join(tempDir, "mac-test.dmg");
       fs.writeFileSync(testFile, "test content");
 
-      const found = findFilesByPattern(tempDir, "*.msi");
+      const found = findFilesByPattern(tempDir, "*.dmg");
 
       expect(found).toHaveLength(1);
-      expect(path.basename(found[0])).toBe("windows-test.msi");
+      expect(path.basename(found[0])).toBe("mac-test.dmg");
     });
 
     it("should handle .app bundles on macOS", () => {
@@ -135,13 +135,13 @@ describe("Cross-platform file finding", () => {
     });
 
     it("should ignore subdirectories when matching files", () => {
-      const subdir = path.join(tempDir, "subdir.deb");
+      const subdir = path.join(tempDir, "subdir.dmg");
       fs.mkdirSync(subdir);
 
-      const file = path.join(tempDir, "app.deb");
+      const file = path.join(tempDir, "app.dmg");
       fs.writeFileSync(file, "test");
 
-      const found = findFilesByPattern(tempDir, "*.deb");
+      const found = findFilesByPattern(tempDir, "*.dmg");
 
       // Should only find the file, not the directory
       expect(found).toHaveLength(1);
@@ -203,24 +203,24 @@ describe("Cross-platform file finding", () => {
       expect(found).toBeNull();
     });
 
-    it("should work with Windows paths", () => {
+    it("should work with macOS paths", () => {
       const msiDir = path.join(
         tempDir,
         "src-tauri",
         "target",
-        "x86_64-pc-windows-msvc",
+        "universal-apple-darwin",
         "release",
         "bundle",
-        "msi",
+        "dmg",
       );
       fs.mkdirSync(msiDir, { recursive: true });
 
-      const msiFile = path.join(msiDir, "test.msi");
+      const msiFile = path.join(msiDir, "test.dmg");
       fs.writeFileSync(msiFile, "test");
 
       const found = findInMultipleLocations([
-        "test.msi",
-        "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/test.msi",
+        "test.dmg",
+        "src-tauri/target/universal-apple-darwin/release/bundle/dmg/test.dmg",
       ]);
 
       expect(found).toBe(msiFile);
@@ -230,7 +230,7 @@ describe("Cross-platform file finding", () => {
   describe("Path normalization", () => {
     it("should handle mixed slashes", () => {
       // This is important for cross-platform compatibility
-      const mixedPath = "src-tauri\\target/release\\bundle/msi";
+      const mixedPath = "src-tauri\\target/release\\bundle/dmg";
       const normalized = path.normalize(mixedPath);
 
       expect(normalized).toBeTruthy();
@@ -243,14 +243,14 @@ describe("Cross-platform file finding", () => {
         "target",
         "release",
         "bundle",
-        "msi",
+        "dmg",
       );
 
       // Should use platform-specific separator
       const parts = joined.split(path.sep);
       expect(parts).toHaveLength(5);
       expect(parts[0]).toBe("src-tauri");
-      expect(parts[4]).toBe("msi");
+      expect(parts[4]).toBe("dmg");
     });
   });
 });

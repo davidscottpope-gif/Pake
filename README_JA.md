@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/tw93/Pake/main/assets/logo.png" width="138" />
   <h1>Pake</h1>
-  <p><b>あらゆるウェブページをコマンド一つでデスクトップアプリに変換。macOS、Windows、Linux に対応。</b></p>
+  <p><b>あらゆるウェブページをコマンド一つでデスクトップアプリに変換。macOS 専用（Mac 専用フォーク）。</b></p>
   <p><a href="README.md">English</a> · <a href="README_CN.md">中文</a> · <a href="README_TW.md">繁體</a> · 日本語 · <a href="README_KR.md">한국어</a> · <a href="README_DE.md">Deutsch</a> · <a href="README_FR.md">Français</a></p>
   <a href="https://twitter.com/HiTw93" target="_blank"><img alt="twitter" src="https://img.shields.io/badge/follow-Tw93-red?style=flat-square&logo=Twitter"></a>
   <a href="https://t.me/+9f9gf4ZrFSQ2OWVl" target="_blank"><img alt="telegram" src="https://img.shields.io/badge/chat-telegram-blueviolet?style=flat-square&logo=Telegram"></a>
@@ -26,17 +26,15 @@
 
 ## 人気パッケージのダウンロード
 
+> [tw93/Pake](https://github.com/tw93/Pake) の個人用 Mac 専用フォークです。macOS アプリのみ対応し、Linux と Windows のビルドは削除しました。以下のダウンロードリンクは上流の macOS 用 `.dmg` ビルド例であり、このフォークのリリースではありません。
+
 <table>
     <tr>
         <td>WeRead
             <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/WeRead_x86_64.deb">Linux</a>
         </td>
         <td>Twitter
             <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Twitter_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -46,13 +44,9 @@
     <tr>
         <td>Grok
             <a href="https://github.com/tw93/Pake/releases/latest/download/Grok.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Grok_x86_64.deb">Linux</a>
         </td>
         <td>DeepSeek
             <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/DeepSeek_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -62,13 +56,9 @@
     <tr>
         <td>ChatGPT
             <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ChatGPT_x86_64.deb">Linux</a>
         </td>
         <td>Gemini
             <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Gemini_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -78,13 +68,9 @@
     <tr>
       <td>YouTube Music
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTubeMusic_x86_64.deb">Linux</a>
       </td>
       <td>YouTube
             <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/YouTube_x86_64.deb">Linux</a>
       </td>
     </tr>
     <tr>
@@ -94,13 +80,9 @@
     <tr>
         <td>LiZhi
             <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/LiZhi_x86_64.deb">Linux</a>
         </td>
         <td>ProgramMusic
             <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/ProgramMusic_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -110,13 +92,9 @@
     <tr>
         <td>Excalidraw
             <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Excalidraw_x86_64.deb">Linux</a>
         </td>
         <td>XiaoHongShu
             <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/XiaoHongShu_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -126,13 +104,9 @@
     <tr>
         <td>Notion
             <a href="https://github.com/tw93/Pake/releases/latest/download/Notion.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Notion_x86_64.deb">Linux</a>
         </td>
         <td>Flomo
             <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo.dmg">Mac</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x64.msi">Windows</a>
-            <a href="https://github.com/tw93/Pake/releases/latest/download/Flomo_x86_64.deb">Linux</a>
         </td>
     </tr>
     <tr>
@@ -147,25 +121,25 @@
 
 <br/>
 
-| Mac                                                       | Windows/Linux                                       | 機能                                 |
-| --------------------------------------------------------- | --------------------------------------------------- | ------------------------------------ |
-| <kbd>⌘</kbd> + <kbd>[</kbd>                               | <kbd>Ctrl</kbd> + <kbd>[</kbd>                      | 前のページに戻る                     |
-| <kbd>⌘</kbd> + <kbd>]</kbd>                               | <kbd>Ctrl</kbd> + <kbd>]</kbd>                      | 次のページに進む                     |
-| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↑</kbd>                      | ページ最上部へスクロール             |
-| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | <kbd>Ctrl</kbd> + <kbd>↓</kbd>                      | ページ最下部へスクロール             |
-| <kbd>⌘</kbd> + <kbd>R</kbd>                               | <kbd>Ctrl</kbd> + <kbd>R</kbd>                      | ページを再読み込み                   |
-| <kbd>⌘</kbd> + <kbd>W</kbd>                               | <kbd>Ctrl</kbd> + <kbd>W</kbd>                      | ウィンドウを隠す（終了ではない）     |
-| <kbd>⌘</kbd> + <kbd>-</kbd>                               | <kbd>Ctrl</kbd> + <kbd>-</kbd>                      | ページを縮小                         |
-| <kbd>⌘</kbd> + <kbd>=</kbd>                               | <kbd>Ctrl</kbd> + <kbd>=</kbd>                      | ページを拡大                         |
-| <kbd>⌘</kbd> + <kbd>0</kbd>                               | <kbd>Ctrl</kbd> + <kbd>0</kbd>                      | ズームをリセット                     |
-| <kbd>⌘</kbd> + <kbd>L</kbd>                               | <kbd>Ctrl</kbd> + <kbd>L</kbd>                      | 現在の URL をコピー                  |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>   | スタイルを合わせて貼り付け           |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>   | ホームに戻る                         |
-| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>   | 開発者ツールを開く（デバッグ版のみ） |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Del</kbd> | キャッシュをクリアして再起動         |
-| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | <kbd>F11</kbd>                                      | フルスクリーン切り替え               |
+| Mac                                                       | 機能                                 |
+| --------------------------------------------------------- | ------------------------------------ |
+| <kbd>⌘</kbd> + <kbd>[</kbd>                               | 前のページに戻る                     |
+| <kbd>⌘</kbd> + <kbd>]</kbd>                               | 次のページに進む                     |
+| <kbd>⌘</kbd> + <kbd>↑</kbd>                               | ページ最上部へスクロール             |
+| <kbd>⌘</kbd> + <kbd>↓</kbd>                               | ページ最下部へスクロール             |
+| <kbd>⌘</kbd> + <kbd>R</kbd>                               | ページを再読み込み                   |
+| <kbd>⌘</kbd> + <kbd>W</kbd>                               | ウィンドウを隠す（終了ではない）     |
+| <kbd>⌘</kbd> + <kbd>-</kbd>                               | ページを縮小                         |
+| <kbd>⌘</kbd> + <kbd>=</kbd>                               | ページを拡大                         |
+| <kbd>⌘</kbd> + <kbd>0</kbd>                               | ズームをリセット                     |
+| <kbd>⌘</kbd> + <kbd>L</kbd>                               | 現在の URL をコピー                  |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌥</kbd> + <kbd>V</kbd> | スタイルを合わせて貼り付け           |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>H</kbd>                | ホームに戻る                         |
+| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>I</kbd>                | 開発者ツールを開く（デバッグ版のみ） |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>⌫</kbd>                | キャッシュをクリアして再起動         |
+| <kbd>⌃</kbd> + <kbd>⌘</kbd> + <kbd>F</kbd>                | フルスクリーン切り替え               |
 
-タイトルバーをダブルクリックしてフルスクリーンを切り替えることもできます。Windows と Linux では `--hide-window-decorations` を指定することで、上部ドラッグ領域を備えたフレームレスウィンドウを作成できます。Mac ではスワイプで進む・戻るができ、タイトルバーをドラッグしてウィンドウを移動でき、メニューバーからナビゲーション、ズーム、ウィンドウ操作も行えます。
+タイトルバーをダブルクリックしてフルスクリーンを切り替えることもできます。Mac ではスワイプで進む・戻るができ、タイトルバーをドラッグしてウィンドウを移動でき、メニューバーからナビゲーション、ズーム、ウィンドウ操作も行えます。
 
 </details>
 
@@ -175,7 +149,11 @@
 
 ```bash
 # Pake CLI のインストール
-pnpm install -g pake-cli
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git Pake-mac
+cd Pake-mac
+pnpm install --frozen-lockfile
+pnpm run cli:build
+npm link
 
 # 基本的な使い方、ファビコンを自動取得
 pake https://github.com --name GitHub
@@ -190,18 +168,19 @@ pake https://weekly.tw93.fun --name Weekly --icon https://cdn.tw93.fun/pake/week
 
 ```text
 # Claude Code
-/plugin marketplace add tw93/Pake
+/plugin marketplace add davidscottpope-gif/Pake
 /plugin install pake@pake
 
 # Codex
-codex plugin marketplace add tw93/Pake
+codex plugin marketplace add davidscottpope-gif/Pake
 codex plugin add pake@pake
 ```
 
 AI agent に以下のテキストを渡して指示できます：
 
 ```text
-Pake（npm i -g pake-cli）を使ってウェブページをデスクトップアプリにパッケージ化してください。まず https://unpkg.com/pake-cli@latest/llms.txt を読み、常に --json を付けて実行し stdout を単一の JSON オブジェクトとしてパースしてください。<url-or-local-dist> を <AppName> という名前でパッケージ化します。
+この Mac 専用フォークのソースブランチからウェブページをアプリ化してください。リンク先の llms.txt を読み、pake に --json を付けて stdout を単一の JSON オブジェクトとして解析してください。
+https://github.com/davidscottpope-gif/Pake/blob/feature/macos-only-ts-js-cleanup/llms.txt
 ```
 
 ## 開発
@@ -232,7 +211,7 @@ Pake の成長は多くのコントリビューターに支えられています
 ## サポート
 
 - 最も直接的な支援は、個人開発の Mac クリーナーアプリ [Mole for Mac](https://mole.fit) を購入していただくことです
-- Pake が気に入ったら、GitHub で Star を付けたり、[周りの開発者仲間におすすめ](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20あらゆるウェブページをコマンド一つでデスクトップアプリに変換。macOS、Windows、Linux%20に対応) したりしていただけると嬉しいです、問題やデスクトップアプリ化にぴったりのサイトがあれば、issue や PR で教えてください
+- Pake が気に入ったら、GitHub で Star を付けたり、[周りの開発者仲間におすすめ](https://twitter.com/intent/tweet?url=https://github.com/tw93/Pake&text=Pake%20-%20あらゆるウェブページをコマンド一つでデスクトップアプリに変換。macOS%20専用) したりしていただけると嬉しいです、問題やデスクトップアプリ化にぴったりのサイトがあれば、issue や PR で教えてください
 - TangYuan と Coke という 2 匹の猫を飼っています。Pake で日々の作業が快適になったら、彼女たちに <a href="https://cats.tw93.fun?name=Pake" target="_blank">おやつ 🥩</a> をごちそうしていただけると嬉しいです
 
 <details>

@@ -18,12 +18,7 @@ async function fixture() {
   directories.push(directory);
   const cli = path.join(directory, 'node_modules', '@tauri-apps', 'cli');
   const entry = path.join(cli, 'tauri.js');
-  const launcher = path.join(
-    directory,
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'tauri.cmd' : 'tauri',
-  );
+  const launcher = path.join(directory, 'node_modules', '.bin', 'tauri');
   await fs.outputJSON(path.join(cli, 'package.json'), {
     name: '@tauri-apps/cli',
   });
@@ -60,12 +55,9 @@ describe('Tauri CLI readiness', () => {
     expect(await hasReadyTauriCli(directory)).toBe(false);
   });
 
-  it.skipIf(process.platform === 'win32')(
-    'rejects a non-executable launcher',
-    async () => {
-      const { directory, launcher } = await fixture();
-      await fs.chmod(launcher, 0o644);
-      expect(await hasReadyTauriCli(directory)).toBe(false);
-    },
-  );
+  it('rejects a non-executable launcher', async () => {
+    const { directory, launcher } = await fixture();
+    await fs.chmod(launcher, 0o644);
+    expect(await hasReadyTauriCli(directory)).toBe(false);
+  });
 });

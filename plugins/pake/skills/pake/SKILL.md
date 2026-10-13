@@ -14,7 +14,7 @@ Pake wraps any webpage or local web build into a native desktop app via Tauri (R
 ## Pick the right command first
 
 - **Inside a Pake repository checkout** (package.json has `"name": "pake-cli"`): build once with `pnpm run cli:build`, then use `node dist/cli.js`.
-- **Anywhere else**: use the published CLI. Install with `npm install -g pake-cli` and run `pake`, or run without installing via `npx pake-cli`.
+- **Anywhere else**: clone this personal Mac-only fork's `feature/macos-only-ts-js-cleanup` branch, run `pnpm install --frozen-lockfile`, `pnpm run cli:build`, then `npm link` to use `pake`. The published npm CLI is upstream, not this fork.
 
 All examples below use `pake`; substitute `node dist/cli.js` inside a checkout.
 
@@ -43,14 +43,14 @@ Exit codes: `0` success, `2` invalid input, `3` build failure, `4` missing envir
 | `NETWORK`       | Reserved, not emitted today; network failures arrive as `ENV_MISSING` or `BUILD_FAILED` instead |
 | `UNEXPECTED`    | Report the message upstream; do not loop on retries                                             |
 
-On success, report `outputs[].path` to the user; that is the installer/bundle they need. On Linux multi-target builds, `ok: true` can carry fewer outputs than requested formats (failed targets land in `warnings`); check `outputs[].format` before declaring all formats built.
+On success, report `outputs[].path` to the user; that is the installer/bundle they need.
 
 ## Declarative config (preferred over long flag lists)
 
 ```bash
 cat > app.json <<'EOF'
 {
-  "$schema": "https://raw.githubusercontent.com/tw93/Pake/main/schema/pake.schema.json",
+  "$schema": "https://raw.githubusercontent.com/davidscottpope-gif/Pake/feature/macos-only-ts-js-cleanup/schema/pake.schema.json",
   "url": "https://example.com",
   "name": "MyApp",
   "width": 1280,
@@ -62,7 +62,7 @@ pake --config app.json --json
 
 Fields are the camelCase CLI option names plus `url`; an explicit CLI flag wins over a config field. Unknown fields and wrong types fail fast with `INVALID_INPUT`.
 
-For the full option list, run `pake --help` or read the schema above. Do not guess option names; the schema is the source of truth. Complete reference: https://github.com/tw93/Pake/blob/main/docs/cli-usage.md
+For the full option list, run `pake --help` or read the schema above. Do not guess option names; the schema is the source of truth. Complete reference: https://github.com/davidscottpope-gif/Pake/blob/feature/macos-only-ts-js-cleanup/docs/cli-usage.md
 
 ## Local content (AI-generated apps)
 
@@ -87,7 +87,7 @@ Use the supplied requirements and existing defaults; ask only for missing inputs
 | Parameter                  | Why it matters                                                                                                    |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | URL or local path          | The target website or build output                                                                                |
-| Name                       | Becomes the `.app` / `.exe` name and productName                                                                  |
+| Name                       | Becomes the `.app` name and productName                                                                           |
 | Bundle ID (`--identifier`) | Defaults to `com.pake.a{md5hash}`; set explicitly for clean installs (e.g. `com.pake.youtube`)                    |
 | Proxy (`--proxy-url`)      | Baked into the binary at build time; not runtime-configurable. Format: `http://host:port` or `socks5://host:port` |
 | Icon                       | Auto-fetched from website if omitted; can be a local path or URL                                                  |
@@ -106,7 +106,7 @@ pake "<URL>" --icon /tmp/icon.png --json
 Icon tips:
 
 - Prefer 256x256 or larger PNGs; SVG also works
-- Pake auto-converts to platform format: `.icns` (macOS), `.ico` (Windows), `.png` (Linux)
+- Pake auto-converts to platform format: `.icns` (macOS)
 - macOS icons get a squircle mask automatically
 - Inside a repo checkout, an old `src-tauri/icons/<name>.icns` is reused; rename or remove it to force re-fetch
 
@@ -124,24 +124,12 @@ Build takes ~40s with cache, ~2min cold; the very first build on a fresh machine
 
 | Platform | Status    | Notes                                                                |
 | -------- | --------- | -------------------------------------------------------------------- |
-| Windows  | Full      | Via `--proxy-server` browser arg                                     |
-| Linux    | Full      | Via Tauri native `proxy_url`                                         |
 | macOS    | macOS 14+ | Uses Tauri native `macos-proxy` feature; auto-detected at build time |
 
 ### Chrome extensions
 
-Not supported. Pake uses the system WebView (WKWebView on macOS, WebView2 on Windows, WebKitGTK on Linux), not a full Chrome browser. Use `--inject` to add custom JS/CSS as an alternative.
+Not supported. Pake uses the system WebView (WKWebView on macOS), not a full Chrome browser. Use `--inject` to add custom JS/CSS as an alternative.
 
 ### OAuth-dependent sites
 
 `--new-window` allows popup auth windows and `--safe-domain` keeps SSO callbacks in-app, but some providers (especially Google) block sign-in inside embedded webviews regardless of flags. Warn the user before promising OAuth support.
-
-### Linux Wayland input issues
-
-If an AppImage opens but clicks or keyboard input do not reach the page on a pure Wayland compositor (especially niri), first rebuild with the latest `pake-cli`, then try the native WebKit path:
-
-```bash
-PAKE_LINUX_WEBKIT_SAFE_MODE=0 ./YourApp.AppImage
-```
-
-If that produces a blank window on the same system, re-enable the conservative workaround with `PAKE_LINUX_WEBKIT_SAFE_MODE=1`. Do not diagnose this from GTK, appindicator, or GStreamer warnings alone; those are often unrelated optional runtime warnings.

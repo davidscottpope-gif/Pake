@@ -35,6 +35,7 @@ pub fn history_step(window: &WebviewWindow, back: bool) {
 ///
 /// WKWebView leaves `allowsBackForwardNavigationGestures` off, and Tauri does
 /// not expose Wry's builder switch, so set it on the native view directly.
+
 #[cfg(target_os = "macos")]
 pub fn enable_back_forward_gestures(webview: &tauri::webview::PlatformWebview) {
     use objc2::msg_send;
@@ -50,7 +51,6 @@ pub fn enable_back_forward_gestures(webview: &tauri::webview::PlatformWebview) {
     }
 }
 
-#[cfg(target_os = "macos")]
 fn history_step_platform(webview: &tauri::webview::PlatformWebview, back: bool) {
     use objc2::msg_send;
     use objc2::runtime::AnyObject;

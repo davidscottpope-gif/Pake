@@ -21,7 +21,7 @@ Guides and reference documentation for building lightweight desktop apps with Pa
 
 ## Resources
 
-- [Main Repository](https://github.com/tw93/Pake)
+- [Main Repository](https://github.com/davidscottpope-gif/Pake/tree/feature/macos-only-ts-js-cleanup)
 - [Releases](https://github.com/tw93/Pake/releases)
 - [Discussions](https://github.com/tw93/Pake/discussions)
 - [Issues](https://github.com/tw93/Pake/issues)

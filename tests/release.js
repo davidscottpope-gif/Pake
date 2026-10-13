@@ -98,13 +98,7 @@ class ReleaseBuildTest {
     const files = [];
 
     // Check for direct output files (created by PAKE_CREATE_APP=1)
-    const directPatterns = [
-      `${appName}.dmg`,
-      `${appName}.app`,
-      `${appName}.msi`,
-      `${appName}.deb`,
-      `${appName}.AppImage`,
-    ];
+    const directPatterns = [`${appName}.dmg`, `${appName}.app`];
 
     // Use Node.js fs instead of Unix find command for cross-platform compatibility
     for (const pattern of directPatterns) {
@@ -128,9 +122,6 @@ class ReleaseBuildTest {
       `src-tauri/target/release/bundle/dmg/${appName}.dmg`,
       `src-tauri/target/universal-apple-darwin/release/bundle/macos/${appName}.app`,
       `src-tauri/target/universal-apple-darwin/release/bundle/dmg/${appName}.dmg`,
-      `src-tauri/target/release/bundle/deb/${appName}_*.deb`,
-      `src-tauri/target/release/bundle/msi/${appName}_*.msi`,
-      `src-tauri/target/release/bundle/appimage/${appName}_*.AppImage`,
     ];
 
     for (const location of bundleLocations) {

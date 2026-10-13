@@ -12,8 +12,6 @@ pub struct WindowConfig {
     /// transparent title bar above the page, painted with the page's top color.
     #[serde(default)]
     pub transparent_title_bar: bool,
-    #[serde(default)]
-    pub hide_window_decorations: bool,
     pub fullscreen: bool,
     pub maximize: bool,
     pub width: f64,
@@ -28,8 +26,6 @@ pub struct WindowConfig {
     pub incognito: bool,
     #[serde(default = "default_restore_last_url")]
     pub restore_last_url: bool,
-    #[serde(default)]
-    pub password_autosave: bool,
     pub title: Option<String>,
     pub enable_wasm: bool,
     pub enable_drag_drop: bool,
@@ -60,13 +56,6 @@ fn default_restore_last_url() -> bool {
     true
 }
 
-#[cfg(any(windows, test))]
-impl WindowConfig {
-    pub fn password_autosave_enabled(&self) -> bool {
-        self.password_autosave && !self.incognito
-    }
-}
-
 impl WindowConfig {
     pub fn remembers_last_url(&self) -> bool {
         self.restore_last_url && self.url_type == "web" && !self.incognito
@@ -82,20 +71,11 @@ impl WindowConfig {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlatformSpecific<T> {
     pub macos: T,
-    pub linux: T,
-    pub windows: T,
 }
 
 impl<T> PlatformSpecific<T> {
     pub const fn get(&self) -> &T {
-        #[cfg(target_os = "macos")]
-        let platform = &self.macos;
-        #[cfg(target_os = "linux")]
-        let platform = &self.linux;
-        #[cfg(target_os = "windows")]
-        let platform = &self.windows;
-
-        platform
+        &self.macos
     }
 }
 
@@ -121,8 +101,7 @@ pub struct PakeConfig {
     #[serde(default)]
     pub download_dir: String,
     /// Prompt for HTTP Basic credentials at runtime on macOS. WKWebView does
-    /// not provide its own 401 login dialog, while Windows and Linux WebViews
-    /// handle this flow natively.
+    /// not provide its own 401 login dialog.
     #[serde(default)]
     pub basic_auth: bool,
     #[serde(default)]
@@ -237,23 +216,6 @@ mod tests {
         let disabled: WindowConfig = serde_json::from_value(disabled).unwrap();
         assert!(!disabled.remembers_last_url());
         assert!(!disabled.incognito);
-    }
-
-    #[test]
-    fn password_autosave_is_opt_in_and_disabled_in_private_windows() {
-        let mut window = config_for("https://example.com").windows.remove(0);
-        for enabled in [false, true] {
-            for incognito in [false, true] {
-                window.password_autosave = enabled;
-                window.incognito = incognito;
-                assert_eq!(window.password_autosave_enabled(), enabled && !incognito);
-            }
-        }
-        let mut legacy = serde_json::to_value(window).unwrap();
-        legacy.as_object_mut().unwrap().remove("password_autosave");
-        let legacy: WindowConfig = serde_json::from_value(legacy).unwrap();
-        assert!(!legacy.password_autosave);
-        assert!(!legacy.password_autosave_enabled());
     }
 
     #[test]

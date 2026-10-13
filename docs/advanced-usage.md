@@ -97,7 +97,7 @@ Configure window properties in `pake.json`:
 }
 ```
 
-`hide_title_bar` is the `pake.json` key (the CLI exposes it as `--hide-title-bar`). It is macOS only and ignored on Windows and Linux, which use `hide_window_decorations` (`--hide-window-decorations`) for frameless windows instead.
+`hide_title_bar` is the `pake.json` key (the CLI exposes it as `--hide-title-bar`). It is macOS only.
 
 ## Static File Packaging
 
@@ -160,7 +160,6 @@ pake https://mail.google.com --name "Gmail Work" --identifier com.example.gmail.
 │   │   ├── inject/        # Injected scripts (CSS, JS, event listeners)
 │   │   └── lib.rs         # Application entry point
 │   ├── icons/             # macOS icons (.icns)
-│   ├── png/               # Windows/Linux icons (.ico, .png)
 │   └── pake.json          # Runtime configuration template
 ├── scripts/               # Build and utility scripts
 └── tests/                 # Test suites
@@ -179,46 +178,11 @@ pake https://mail.google.com --name "Gmail Work" --identifier com.example.gmail.
 
 - Xcode Command Line Tools: `xcode-select --install`
 
-**Windows:**
-
-- **CRITICAL**: Consult [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) before proceeding
-- Windows 10 SDK (10.0.19041.0) and Visual Studio Build Tools 2022 (≥17.2)
-- Required redistributables:
-  1. Microsoft Visual C++ 2015-2022 Redistributable (x64)
-  2. Microsoft Visual C++ 2015-2022 Redistributable (x86)
-  3. Microsoft Visual C++ 2012 Redistributable (x86) (optional)
-  4. Microsoft Visual C++ 2013 Redistributable (x86) (optional)
-  5. Microsoft Visual C++ 2008 Redistributable (x86) (optional)
-
-- **Windows ARM (ARM64) support**: In Visual Studio Installer, under Individual Components, select MSVC v143 - VS 2022 C++ ARM64 build tools
-
-**Linux (Ubuntu):**
-
-```bash
-sudo apt install libdbus-1-dev \
-    libsoup-3.0-dev \
-    libjavascriptcoregtk-4.1-dev \
-    libwebkit2gtk-4.1-dev \
-    build-essential \
-    curl \
-    wget \
-    file \
-    libxdo-dev \
-    libssl-dev \
-    libgtk-3-dev \
-    libayatana-appindicator3-dev \
-    librsvg2-dev \
-    gnome-video-effects \
-    gnome-video-effects-extra \
-    libglib2.0-dev \
-    pkg-config
-```
-
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/tw93/Pake.git
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git
 cd Pake
 
 # Install dependencies

@@ -44,7 +44,7 @@ it.skipIf(process.platform !== 'darwin')('rejects an empty app bundle', () => {
 it('accepts filesystem aliases of the same output without accepting a different file', () => {
   const { app } = fixture();
   const alias = app + '-alias';
-  fs.symlinkSync(app, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  fs.symlinkSync(app, alias, 'dir');
   verifyBuildOutput(
     0,
     JSON.stringify({ ok: true, outputs: [{ path: alias }] }),

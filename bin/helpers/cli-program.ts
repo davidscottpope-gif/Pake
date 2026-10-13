@@ -9,8 +9,8 @@ export function getCliProgram() {
   const logo = `${chalk.green(' ____       _')}
 ${green('|  _ \\ __ _| | _____')}
 ${green('| |_) / _` | |/ / _ \\')}
-${green('|  __/ (_| |   <  __/')}  ${yellow('https://github.com/tw93/pake')}
-${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with Rust.')}
+${green('|  __/ (_| |   <  __/')}  ${yellow('https://github.com/davidscottpope-gif/Pake')}
+${green('|_|   \\__,_|_|\\_\\___|  Mac-only fork: turn a webpage into a macOS app.')}
 `;
 
   return program

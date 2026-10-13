@@ -11,53 +11,6 @@ import path from "path";
 
 describe("Workflow path integration", () => {
   describe("Platform-specific output paths", () => {
-    it("should match Linux output paths", () => {
-      // Expected paths based on LinuxBuilder behavior
-      const linuxPaths = {
-        deb: {
-          // CLI copies to project root
-          primary: "appname.deb",
-          // Fallback location in bundle directory
-          fallback: "src-tauri/target/release/bundle/deb",
-        },
-        appimage: {
-          primary: "appname.AppImage",
-          fallback: "src-tauri/target/release/bundle/appimage",
-        },
-        rpm: {
-          primary: "appname.rpm",
-          fallback: "src-tauri/target/release/bundle/rpm",
-        },
-        zst: {
-          primary: "appname-1.0.0-1-x86_64.pkg.tar.zst",
-        },
-      };
-
-      // Verify paths are defined
-      expect(linuxPaths.deb.primary).toBeTruthy();
-      expect(linuxPaths.deb.fallback).toBeTruthy();
-      expect(linuxPaths.appimage.primary).toBeTruthy();
-      expect(linuxPaths.appimage.fallback).toBeTruthy();
-      expect(linuxPaths.rpm.primary).toBeTruthy();
-      expect(linuxPaths.zst.primary).toBeTruthy();
-    });
-
-    it("should match Windows output paths", () => {
-      // Expected paths based on WinBuilder behavior
-      const windowsPaths = {
-        msi: {
-          // For x64 builds, files are in architecture-specific directory
-          architectureSpecific:
-            "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi",
-          // Fallback to generic path
-          generic: "src-tauri/target/release/bundle/msi",
-        },
-      };
-
-      expect(windowsPaths.msi.architectureSpecific).toBeTruthy();
-      expect(windowsPaths.msi.generic).toBeTruthy();
-    });
-
     it("should match macOS output paths", () => {
       // Expected paths based on MacBuilder behavior
       const macosPaths = {
@@ -86,57 +39,27 @@ describe("Workflow path integration", () => {
   });
 
   describe("Multi-target scenarios", () => {
-    it("should handle Linux multi-target builds", () => {
-      const targets = "deb,appimage";
+    it("should handle targets with spaces", () => {
+      const targets = "app, dmg";
       const parsedTargets = targets.split(",").map((t) => t.trim());
 
-      expect(parsedTargets).toEqual(["deb", "appimage"]);
+      expect(parsedTargets).toEqual(["app", "dmg"]);
       expect(parsedTargets).toHaveLength(2);
     });
 
-    it("should handle targets with spaces", () => {
-      const targets = "deb, appimage, rpm";
-      const parsedTargets = targets.split(",").map((t) => t.trim());
-
-      expect(parsedTargets).toEqual(["deb", "appimage", "rpm"]);
-      expect(parsedTargets).toHaveLength(3);
-    });
-
     it("should filter valid targets", () => {
-      const targets = "deb,invalid,appimage";
+      const targets = "app,invalid,dmg";
       const parsedTargets = targets.split(",").map((t) => t.trim());
-      const validTargets = ["deb", "appimage", "rpm", "zst"];
+      const validTargets = ["app", "dmg"];
       const filtered = parsedTargets.filter((t) => validTargets.includes(t));
 
-      expect(filtered).toEqual(["deb", "appimage"]);
+      expect(filtered).toEqual(["app", "dmg"]);
       expect(filtered).not.toContain("invalid");
-    });
-
-    it("should keep zst in valid Linux targets", () => {
-      const targets = "deb,zst";
-      const parsedTargets = targets.split(",").map((t) => t.trim());
-      const validTargets = ["deb", "appimage", "rpm", "zst"];
-      const filtered = parsedTargets.filter((t) => validTargets.includes(t));
-
-      expect(filtered).toEqual(["deb", "zst"]);
     });
   });
 
   describe("Workflow artifact uploads", () => {
-    it("should upload every Linux workflow package format", () => {
-      const workflow = fs.readFileSync(
-        ".github/workflows/pake-cli.yaml",
-        "utf8",
-      );
-
-      expect(workflow).toContain("Upload DEB (Linux)");
-      expect(workflow).toContain("Upload AppImage (Linux)");
-      expect(workflow).toContain("Upload RPM (Linux)");
-      expect(workflow).toContain("Upload ZST (Linux)");
-      expect(workflow).toContain("path: ${{ inputs.name }}-*.pkg.tar.zst");
-    });
-
-    it("should forward the new-window input on every platform", () => {
+    it("should forward the new-window input on macOS", () => {
       const workflow = fs.readFileSync(
         ".github/workflows/pake-cli.yaml",
         "utf8",
@@ -144,24 +67,10 @@ describe("Workflow path integration", () => {
 
       expect(workflow).toContain("new_window:");
       expect(workflow).toContain('ARGS+=("--new-window")');
-      expect(workflow).toContain('$args += "--new-window"');
     });
   });
 
   describe("Architecture-specific paths", () => {
-    it("should construct correct Windows x64 path", () => {
-      const basePath = "src-tauri/target";
-      const arch = "x86_64-pc-windows-msvc";
-      const mode = "release";
-      const bundleType = "msi";
-
-      const fullPath = path.join(basePath, arch, mode, "bundle", bundleType);
-
-      expect(fullPath).toContain("x86_64-pc-windows-msvc");
-      expect(fullPath).toContain("release");
-      expect(fullPath).toContain("msi");
-    });
-
     it("should construct correct macOS universal path", () => {
       const basePath = "src-tauri/target";
       const arch = "universal-apple-darwin";
@@ -174,40 +83,9 @@ describe("Workflow path integration", () => {
       expect(fullPath).toContain("release");
       expect(fullPath).toContain("dmg");
     });
-
-    it("should construct correct Linux arm64 path", () => {
-      const basePath = "src-tauri/target";
-      const arch = "aarch64-unknown-linux-gnu";
-      const mode = "release";
-      const bundleType = "deb";
-
-      const fullPath = path.join(basePath, arch, mode, "bundle", bundleType);
-
-      expect(fullPath).toContain("aarch64-unknown-linux-gnu");
-      expect(fullPath).toContain("release");
-      expect(fullPath).toContain("deb");
-    });
   });
 
   describe("File naming patterns", () => {
-    it("should match Linux DEB naming pattern", () => {
-      // Format: {name}_{version}_{arch}.deb
-      const pattern = /^[\w-]+_\d+\.\d+\.\d+_(amd64|arm64)\.deb$/;
-
-      expect("myapp_1.0.0_amd64.deb").toMatch(pattern);
-      expect("my-app_2.5.1_arm64.deb").toMatch(pattern);
-      expect("invalid.deb").not.toMatch(pattern);
-    });
-
-    it("should match Windows MSI naming pattern", () => {
-      // Format: {name}_{version}_{arch}_{language}.msi
-      const pattern = /^[\w-]+_\d+\.\d+\.\d+_(x64|arm64)_[\w-]+\.msi$/;
-
-      expect("myapp_1.0.0_x64_en-US.msi").toMatch(pattern);
-      expect("my-app_2.5.1_arm64_zh-CN.msi").toMatch(pattern);
-      expect("invalid.msi").not.toMatch(pattern);
-    });
-
     it("should match macOS DMG naming pattern", () => {
       // Format: {name}_{version}_{arch}.dmg
       const pattern = /^[\w-]+_\d+\.\d+\.\d+_(universal|x64|aarch64)\.dmg$/;
@@ -222,8 +100,8 @@ describe("Workflow path integration", () => {
   describe("Path traversal safety", () => {
     it("should handle paths without directory traversal", () => {
       const safePaths = [
-        "src-tauri/target/release/bundle/msi",
-        "output/windows",
+        "src-tauri/target/release/bundle/dmg",
+        "output/macos",
         "dist/cli.js",
       ];
 

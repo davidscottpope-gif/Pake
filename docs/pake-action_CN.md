@@ -12,7 +12,7 @@
 
 ```yaml
 - name: Build Pake App
-  uses: tw93/Pake@v3
+  uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
   with:
     url: "https://example.com"
     name: "MyApp"
@@ -46,10 +46,10 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: tw93/Pake@v3
+      - uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
         with:
           url: "https://weekly.tw93.fun"
           name: "WeeklyApp"
@@ -58,30 +58,13 @@ jobs:
 ### 指定自定义图标和窗口尺寸
 
 ```yaml
-- uses: tw93/Pake@v3
+- uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
   with:
     url: "https://example.com"
     name: "MyApp"
     icon: "https://example.com/icon.png"
     width: 1400
     height: 900
-```
-
-### 多平台矩阵构建
-
-```yaml
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: tw93/Pake@v3
-        with:
-          url: "https://example.com"
-          name: "CrossPlatformApp"
 ```
 
 ## 执行流程
@@ -92,11 +75,9 @@ jobs:
 
 ## 支持平台
 
-- **Linux**：`.deb` 安装包（Ubuntu 运行器）
 - **macOS**：`.app` 应用（macOS 运行器）
-- **Windows**：`.msi` 或 `.exe`（Windows 运行器）
 
-每次运行只把找到的第一个安装包移到输出目录并写入 `package-path`，可结合 GitHub Actions 的 `matrix` 策略并发构建全平台安装包。
+每次运行只把找到的第一个安装包移到输出目录并写入 `package-path`。
 
 ## 相关文档
 

@@ -95,6 +95,13 @@ program.action(async (urlArg: string, options: PakeCliOptions) => {
   let endCancellation: (() => void) | undefined;
 
   try {
+    if (process.platform !== 'darwin' && (url || options.config)) {
+      throw new PakeError('This fork only supports building on macOS.', {
+        code: 'ENV_MISSING',
+        hint: 'Run this personal fork on a Mac.',
+      });
+    }
+
     // Heal a dist_bak stranded by an earlier crashed local-input run before
     // building, or this build would embed that run's staged files.
     restoreLocalTree();

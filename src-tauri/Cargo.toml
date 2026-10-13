@@ -23,7 +23,6 @@ serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.49.0", features = ["time", "fs"] }
 tauri = { version = "2.10.2", features = [
   "tray-icon",
-  "image-ico",
   "image-png",
 ] }
 tauri-plugin-window-state = "2.4.1"
@@ -51,28 +50,11 @@ objc2-web-kit = { version = "0.3", default-features = false, features = [
   "WKWebViewConfiguration",
 ] }
 
-[target.'cfg(target_os = "linux")'.dependencies]
-# Used for native WebKitGTK go_back/go_forward on error pages (no page JS).
-# Version and features must match what wry resolves, or PlatformWebview::inner
-# hands back a WebView from a different crate instance.
-webkit2gtk = { version = "=2.0.2", features = ["v2_38"] }
-
-[target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61.2", features = [
-  "Win32_Foundation",
-  "Win32_UI_Shell",
-  "Win32_UI_WindowsAndMessaging",
-] }
-# Used for native WebView2 GoBack/GoForward on error pages (no page JS).
-webview2-com = "0.38"
-# The generated WebView2 interfaces use this trait for COM interface casts.
-windows-core = "0.61.2"
-
 [features]
 # this feature is used for development builds from development cli
 cli-build = []
 # Prebuilt template that reads a pake-runtime folder at launch: Contents/Resources
-# on macOS, next to the executable elsewhere. The CLI never enables it.
+# on macOS. The CLI never enables it.
 runtime-template = []
 # Tauri's macOS proxy APIs require macOS 14 or later. The CLI enables this
 # feature only after checking the host Darwin version.

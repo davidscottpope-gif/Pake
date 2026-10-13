@@ -86,7 +86,7 @@ function handleShortcut(event) {
 
 function handleWebShortcut(event) {
   // Cmd+Up / Cmd+Down scroll to the top / bottom of the page. (Upstream also
-  // handled Ctrl+R, Ctrl+[ and friends here for Windows and Linux; macOS gets
+  // handles Cmd+R, Cmd+[ and related shortcuts; macOS gets
   // those from the native menu.)
   const isScrollKey = event.key === "ArrowUp" || event.key === "ArrowDown";
   if (event.metaKey && isScrollKey) {
@@ -1056,7 +1056,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Bridge the Web Notification + Web Badging APIs to Pake's Rust commands so
 // pages running inside the webview can drive the macOS dock badge (and
-// taskbar badge on Linux/Windows). Installs synchronously instead of waiting
+// Dock badge). Installs synchronously instead of waiting
 // for DOMContentLoaded so feature-detection on Notification/setAppBadge
 // returns the polyfill before site scripts run.
 (function () {

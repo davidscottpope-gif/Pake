@@ -51,12 +51,7 @@ async function fixture() {
     path.join(root, 'node_modules', '@tauri-apps', 'cli', 'tauri.js'),
     'process.exit(process.argv[2] === "--version" ? 0 : 1);',
   );
-  const launcher = path.join(
-    root,
-    'node_modules',
-    '.bin',
-    process.platform === 'win32' ? 'tauri.cmd' : 'tauri',
-  );
+  const launcher = path.join(root, 'node_modules', '.bin', 'tauri');
   await fs.outputFile(launcher, 'fixture');
   await fs.chmod(launcher, 0o755);
   return root;

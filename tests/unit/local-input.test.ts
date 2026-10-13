@@ -11,8 +11,8 @@ function makeTauriConf(): PakeTauriConfig {
   return {
     pake: {
       windows: [{ url: '', url_type: 'web' } as never],
-      user_agent: { macos: '', linux: '', windows: '' },
-      system_tray: { macos: false, linux: false, windows: false },
+      user_agent: { macos: '' },
+      system_tray: { macos: false },
       system_tray_path: '',
       proxy_url: '',
       multi_instance: false,

@@ -47,12 +47,12 @@ For CLI or Rust-template fixes that must reach npm without an app release. The v
 1. [ ] Bump all four version files, `pnpm run cli:build`, stage the version files and `git add -f dist/cli.js`.
 2. [ ] `pnpm run release:check` (already includes vitest). For a Rust-template fix, also run the narrow current-platform Rust check.
 3. [ ] Commit `chore: bump version to VX.Y.Z`, push `main`, record `<publish-sha>` with `git rev-parse HEAD`.
-4. [ ] Wait for `gh run list --workflow=quality-and-test.yml --commit <publish-sha> --limit 3 --json databaseId,headSha,status,conclusion` to be `completed` / `success`; for Rust-template changes also `Full Tauri Build (windows-latest)`.
+4. [ ] Wait for `gh run list --workflow=quality-and-test.yml --commit <publish-sha> --limit 3 --json databaseId,headSha,status,conclusion` to be `completed` / `success`; for Rust-template changes also `Full Tauri Build (macOS)`.
 5. [ ] `gh workflow run npm-publish.yml --ref main -f expected_sha=<publish-sha> -f quality_run_id=<quality-run-id>`. If `main` moved, wait for the new head's own Quality run.
 6. [ ] Poll `gh run view <run-id> --json headSha,status,conclusion`; `headSha` and the npm `gitHead` must both equal `<publish-sha>`.
 7. [ ] Issue closeout per AGENTS.md; for a Rust-template fix, tell users to rebuild their app after upgrading.
 
-Skip for a hotfix: no `V*` tag, no GitHub Release or notes, no reactions, no Docker.
+Skip for a hotfix: no `V*` tag, no GitHub Release or notes, no reactions.
 
 A successful publish followed by a verification timeout does not authorize republishing: npm scans new packages for 5 to 15+ minutes. Re-read the registry until the version appears. Local fallback, only when the trusted path is blocked: `npm exec --yes --package=pnpm@10.26.2 -- npm publish --registry=https://registry.npmjs.org`.
 

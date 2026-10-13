@@ -185,10 +185,10 @@ function createKeyEvent(key, overrides = {}) {
 }
 
 describe("event fullscreen shortcuts", () => {
-  it("preserves WebView2 native fullscreen and keeps the other platform polyfill", () => {
+  it("installs the macOS fullscreen bridge once", () => {
     const source = fs.readFileSync("src-tauri/src/app/window.rs", "utf8");
     const injection =
-      /#\[cfg\(not\(target_os = "windows"\)\)\]\s*\{\s*window_builder =\s*window_builder\.initialization_script\(include_str!\("\.\.\/inject\/fullscreen\.js"\)\);\s*\}/;
+      /\{\s*window_builder =\s*window_builder\.initialization_script\(include_str!\("\.\.\/inject\/fullscreen\.js"\)\);\s*\}/;
     expect(source).toMatch(injection);
     expect(
       source.match(/include_str!\("\.\.\/inject\/fullscreen\.js"\)/g),

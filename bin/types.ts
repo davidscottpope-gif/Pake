@@ -155,19 +155,14 @@ export interface PakeAppOptions extends PakeCliOptions {
   identifier: string;
 }
 
-// Mirrors the Rust PlatformSpecific struct, which requires all three keys when
-// pake.json is deserialized. Only `macos` is used by this fork; linux/windows
-// stay until the Rust side drops them.
+// macOS configuration shared with Rust.
 export interface PlatformSpecific<T> {
   macos: T;
-  linux: T;
-  windows: T;
 }
 
 export interface WindowConfig {
   url: string;
   hide_title_bar: boolean;
-  hide_window_decorations: boolean;
   fullscreen: boolean;
   maximize: boolean;
   width: number;
@@ -181,7 +176,6 @@ export interface WindowConfig {
   hide_on_close: boolean;
   incognito: boolean;
   restore_last_url: boolean;
-  password_autosave: boolean;
   title?: string;
   enable_wasm: boolean;
   enable_drag_drop: boolean;

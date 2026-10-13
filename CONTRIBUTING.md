@@ -4,7 +4,7 @@
 
 ## Branch Management
 
-All development happens directly on `main`. Submit pull requests to `main`.
+This personal cleanup lives on `feature/macos-only-ts-js-cleanup`. Keep `main` unchanged until the owner chooses to merge it. Upstream contributions are a separate step.
 
 ## Development Setup
 
@@ -14,14 +14,12 @@ All development happens directly on `main`. Submit pull requests to `main`.
 - Rust ≥1.85.0 (required for edition2024 support in dependencies)
 - Platform-specific build tools:
   - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
-  - **Windows**: Visual Studio Build Tools with MSVC
-  - **Linux**: `build-essential`, `libwebkit2gtk`, system dependencies
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/tw93/Pake.git
+git clone --single-branch --branch feature/macos-only-ts-js-cleanup https://github.com/davidscottpope-gif/Pake.git
 cd Pake
 
 # Install dependencies
@@ -58,7 +56,7 @@ The project uses streamlined GitHub Actions workflows:
 
 - **Quality & Testing**: Automatic code quality checks and comprehensive testing on all platforms
 - **Claude AI Integration**: Automated code review and interactive assistance
-- **Release Management**: Coordinated releases with app building and Docker publishing
+- **Release Management**: Coordinated releases with Mac app building
 
 ## Troubleshooting
 
@@ -81,7 +79,7 @@ This file is already in `.gitignore` and should not be committed to the reposito
 ### Common Build Issues
 
 - **Rust compilation errors**: Run `cargo clean` in `src-tauri/` directory
-- **`cargo` command not found after installation**: Pake CLI now reloads the Rust environment automatically, but if the issue persists reopen your terminal or run `source ~/.cargo/env` (macOS/Linux) / `call %USERPROFILE%\.cargo\env` (Windows) before retrying
+- **`cargo` command not found after installation**: Pake CLI now reloads the Rust environment automatically, but if the issue persists reopen your terminal or run `source ~/.cargo/env` before retrying
 - **Node dependency issues**: Delete `node_modules` and run `pnpm install`
 - **Permission errors on macOS**: Run `sudo xcode-select --reset`
 

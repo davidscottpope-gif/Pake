@@ -1,5 +1,5 @@
 name: "Pake Web App Builder"
-description: "Transform any webpage into a lightweight desktop app using Rust and Tauri"
+description: "Transform a webpage into a macOS app using Rust and Tauri"
 author: "tw93"
 branding:
   icon: "package"
@@ -47,15 +47,16 @@ runs:
   using: "composite"
   steps:
     - name: Setup Environment
+      working-directory: ${{ github.action_path }}
       shell: bash
       run: |
+        test "$RUNNER_OS" = "macOS" || { echo "This fork requires macOS" >&2; exit 1; }
+
         # Install Node.js dependencies
         npm install
 
-        # Build Pake CLI if not exists
-        if [ ! -f "dist/cli.js" ]; then
-          npm run cli:build
-        fi
+        # Build this action checkout's Pake CLI
+        npm run cli:build
 
         # Install Rust/Cargo if needed
         if ! command -v cargo &> /dev/null; then
@@ -69,6 +70,7 @@ runs:
 
     - name: Build Pake App
       id: build
+      working-directory: ${{ github.action_path }}
       shell: bash
       env:
         INPUT_URL: ${{ inputs.url }}
@@ -100,25 +102,16 @@ runs:
           ARGS+=("--debug")
         fi
 
-        # Create output directory
+        # Relative output paths belong to the calling workflow workspace.
+        case "$INPUT_OUTPUT_DIR" in
+          /*) ;;
+          *) INPUT_OUTPUT_DIR="$GITHUB_WORKSPACE/$INPUT_OUTPUT_DIR" ;;
+        esac
         mkdir -p -- "$INPUT_OUTPUT_DIR"
         export PAKE_CREATE_APP=1
 
-        # The CLI copies the final package into the working directory as
-        # <name>.<ext> (the name may be normalized, e.g. lowercased on Linux)
-        # and deletes the bundle under src-tauri/target, so select the file it
-        # wrote here during this run rather than searching the target tree.
-        # Linux defaults to deb,appimage (rpm,appimage on RPM distros) and still
-        # succeeds when only one target builds, so accept any of them.
-        case "$RUNNER_OS" in
-          Windows) PACKAGE_EXTS=(msi) ;;
-          Linux) PACKAGE_EXTS=(deb rpm AppImage) ;;
-          macOS) PACKAGE_EXTS=(app dmg) ;;
-          *)
-            echo "❌ Unsupported runner OS: $RUNNER_OS" >&2
-            exit 1
-            ;;
-        esac
+        # Select only the Mac package created by this run.
+        PACKAGE_EXTS=(app dmg)
         BUILD_MARKER="$(mktemp)"
         trap 'rm -f "$BUILD_MARKER"' EXIT
 

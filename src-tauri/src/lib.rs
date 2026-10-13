@@ -1,4 +1,6 @@
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
+#[cfg(not(target_os = "macos"))]
+compile_error!("This Pake fork supports macOS only.");
+
 mod app;
 mod util;
 
@@ -10,23 +12,11 @@ use tauri::{webview::PageLoadEvent, Manager, Url, WebviewWindow};
 use tauri_plugin_window_state::Builder as WindowStatePlugin;
 use tauri_plugin_window_state::StateFlags;
 
-#[cfg(target_os = "macos")]
 use std::time::Duration;
 
 // Fallback when PageLoadEvent::Finished never arrives (offline / stalled).
 // Deliberately longer than a paint tick so the normal path can win first.
 const STARTUP_WINDOW_FALLBACK_DELAY: u64 = 3_000;
-#[cfg(target_os = "linux")]
-const PAKE_LINUX_WEBKIT_SAFE_MODE: &str = "PAKE_LINUX_WEBKIT_SAFE_MODE";
-#[cfg(target_os = "linux")]
-const WEBKIT_DISABLE_DMABUF_RENDERER: &str = "WEBKIT_DISABLE_DMABUF_RENDERER";
-#[cfg(target_os = "linux")]
-const WEBKIT_DISABLE_COMPOSITING_MODE: &str = "WEBKIT_DISABLE_COMPOSITING_MODE";
-#[cfg(target_os = "linux")]
-const WEBKIT_DMABUF_RENDERER_FORCE_SHM: &str = "WEBKIT_DMABUF_RENDERER_FORCE_SHM";
-#[cfg(target_os = "linux")]
-const GDK_BACKEND: &str = "GDK_BACKEND";
-
 use app::{
     invoke::{
         clear_dock_badge, close_notification, download_file, increment_dock_badge,
@@ -35,8 +25,8 @@ use app::{
     },
     setup::{set_global_shortcut, set_system_tray},
     window::{
-        open_additional_window_safe, reapply_window_icon, reveal_built_window, save_last_url,
-        set_window, MultiWindowState,
+        open_additional_window_safe, reveal_built_window, save_last_url, set_window,
+        MultiWindowState,
     },
 };
 use util::get_pake_config;
@@ -67,233 +57,13 @@ fn reveal_startup_window(window: WebviewWindow, init_fullscreen: bool, revealed:
 
     tauri::async_runtime::spawn(async move {
         let _ = window.show();
-        reapply_window_icon(&window);
 
-        // Fixed: Linux fullscreen issue with virtual keyboard
-        #[cfg(target_os = "linux")]
-        {
-            if init_fullscreen {
-                let _ = window.set_fullscreen(true);
-                // Ensure webview maintains focus for input after fullscreen
-                let _ = window.set_focus();
-            } else {
-                // Fix: Ubuntu 24.04/GNOME window buttons non-functional until resize (#1122)
-                // The window manager needs time to process the MapWindow event before
-                // accepting focus requests. Without this, decorations remain non-interactive.
-                tokio::time::sleep(tokio::time::Duration::from_millis(30)).await;
-                let _ = window.set_focus();
-            }
-        }
-
-        #[cfg(not(target_os = "linux"))]
         let _ = init_fullscreen;
     });
 }
 
-#[cfg(any(target_os = "linux", test))]
-fn is_disabled_env_value(value: &str) -> bool {
-    matches!(
-        value.trim().to_ascii_lowercase().as_str(),
-        "0" | "false" | "off" | "no" | "native" | "disabled"
-    )
-}
-
-#[cfg(any(target_os = "linux", test))]
-fn is_non_empty_env_value(value: Option<&str>) -> bool {
-    value.map(|value| !value.trim().is_empty()).unwrap_or(false)
-}
-
-#[cfg(any(target_os = "linux", test))]
-fn contains_niri(value: &str) -> bool {
-    value
-        .split([':', ';', ',', ' '])
-        .any(|part| part.eq_ignore_ascii_case("niri"))
-}
-
-#[cfg(any(target_os = "linux", test))]
-fn is_niri_session(niri_socket: Option<&str>, desktop_values: &[Option<&str>]) -> bool {
-    is_non_empty_env_value(niri_socket)
-        || desktop_values
-            .iter()
-            .flatten()
-            .any(|value| contains_niri(value))
-}
-
-/// The two WebKit workarounds have different origins and therefore different
-/// scopes, which one gate cannot express.
-///
-/// `WEBKIT_DISABLE_DMABUF_RENDERER` came from #1117 (96e57376) for Linux
-/// stability in general, three months before anything Wayland-specific, and
-/// upstream still reports the blank window it prevents on X11 with the NVIDIA
-/// proprietary driver (tauri-apps/tauri#9394). This is the legacy policy;
-/// apply_linux_webkit_runtime_flags substitutes SHM on WebKitGTK 2.52+ X11.
-///
-/// niri is excepted because #1226 was fixed by dropping both variables, and on
-/// WebKitGTK 2.52 either one alone is enough to undo that: disabling the dmabuf
-/// renderer leaves `AcceleratedBackingStore::rendererBufferTransportMode` empty,
-/// `checkRequirements()` then returns false, and `HardwareAccelerationManager`
-/// clears `m_canUseHardwareAcceleration` through an OR. Setting only this one
-/// would put niri back in the state #1226 reported.
-#[cfg(any(target_os = "linux", test))]
-fn should_disable_dmabuf_renderer(
-    safe_mode: Option<&str>,
-    niri_socket: Option<&str>,
-    desktop_values: &[Option<&str>],
-) -> bool {
-    if let Some(value) = safe_mode.filter(|value| !value.trim().is_empty()) {
-        return !is_disabled_env_value(value);
-    }
-
-    !is_niri_session(niri_socket, desktop_values)
-}
-
-/// `WEBKIT_DISABLE_COMPOSITING_MODE` came from cb911ec7, for a blank screen on
-/// Wayland without a GPU. X11 never had that failure, so this one is
-/// Wayland-only, with the same niri exception.
-///
-/// It is not on its own what segfaults playback in #1374. Both variables reach
-/// the same boolean on WebKitGTK 2.52, so the state that crashes is hardware
-/// acceleration being off, whichever variable turned it off. Narrowing this one
-/// changed nothing on X11 while the dmabuf flag still applied there.
-/// `PAKE_LINUX_WEBKIT_SAFE_MODE` still forces or suppresses both anywhere.
-#[cfg(any(target_os = "linux", test))]
-fn should_disable_compositing_mode(
-    safe_mode: Option<&str>,
-    niri_socket: Option<&str>,
-    wayland_display: Option<&str>,
-    gdk_backend: Option<&str>,
-    desktop_values: &[Option<&str>],
-) -> bool {
-    if let Some(value) = safe_mode.filter(|value| !value.trim().is_empty()) {
-        return !is_disabled_env_value(value);
-    }
-
-    // WAYLAND_DISPLAY says a compositor is reachable, not that GTK will use it.
-    // An explicit GDK_BACKEND=x11 selects the X11 path, so the Wayland-only
-    // workaround does not apply. should_force_wayland_gdk_backend also
-    // treats an explicit backend as authoritative.
-    if gdk_backend.is_some_and(|value| value.trim().eq_ignore_ascii_case("x11")) {
-        return false;
-    }
-
-    if !is_non_empty_env_value(wayland_display) {
-        return false;
-    }
-
-    !is_niri_session(niri_socket, desktop_values)
-}
-
-// On WebKitGTK 2.52+, SHM replaces both legacy flags on X11 and Wayland:
-// either flag turns hardware acceleration off, which crashes video playback
-// (#1374 on X11, #1386 on GNOME Wayland) and makes Wayland sluggish (#1192).
-// Older WebKit keeps its existing workarounds; niri stays native.
-#[cfg(any(target_os = "linux", test))]
-fn should_use_shm_renderer(
-    webkit_version: (u32, u32),
-    safe_mode: Option<&str>,
-    disable_dmabuf: bool,
-) -> bool {
-    webkit_version >= (2, 52) && !is_non_empty_env_value(safe_mode) && disable_dmabuf
-}
-
-#[cfg(any(target_os = "linux", test))]
-fn should_force_wayland_gdk_backend(
-    gdk_backend: Option<&str>,
-    wayland_display: Option<&str>,
-    display: Option<&str>,
-) -> bool {
-    // Respect an explicit user choice.
-    if is_non_empty_env_value(gdk_backend) {
-        return false;
-    }
-
-    // On pure Wayland compositors without XWayland (e.g. Niri), $DISPLAY is unset
-    // and GTK defaults to the X11 backend, which aborts with "Failed to initialize
-    // GTK". Wayland is then the only viable backend, so forcing it is safe.
-    is_non_empty_env_value(wayland_display) && !is_non_empty_env_value(display)
-}
-
-#[cfg(target_os = "linux")]
-fn apply_linux_gdk_backend() {
-    if should_force_wayland_gdk_backend(
-        std::env::var(GDK_BACKEND).ok().as_deref(),
-        std::env::var("WAYLAND_DISPLAY").ok().as_deref(),
-        std::env::var("DISPLAY").ok().as_deref(),
-    ) {
-        std::env::set_var(GDK_BACKEND, "wayland");
-    }
-}
-
-#[cfg(target_os = "linux")]
-fn apply_linux_webkit_runtime_flags() {
-    let safe_mode = std::env::var(PAKE_LINUX_WEBKIT_SAFE_MODE).ok();
-    if safe_mode.as_deref().is_some_and(is_disabled_env_value) {
-        std::env::remove_var(WEBKIT_DISABLE_DMABUF_RENDERER);
-        std::env::remove_var(WEBKIT_DISABLE_COMPOSITING_MODE);
-        return;
-    }
-
-    let desktop_values = [
-        std::env::var("XDG_CURRENT_DESKTOP").ok(),
-        std::env::var("XDG_SESSION_DESKTOP").ok(),
-        std::env::var("DESKTOP_SESSION").ok(),
-    ];
-    let desktop_refs = desktop_values
-        .iter()
-        .map(|value| value.as_deref())
-        .collect::<Vec<_>>();
-
-    let niri_socket = std::env::var("NIRI_SOCKET").ok();
-
-    let disable_dmabuf =
-        should_disable_dmabuf_renderer(safe_mode.as_deref(), niri_socket.as_deref(), &desktop_refs);
-    let disable_compositing = should_disable_compositing_mode(
-        safe_mode.as_deref(),
-        niri_socket.as_deref(),
-        std::env::var("WAYLAND_DISPLAY").ok().as_deref(),
-        std::env::var(GDK_BACKEND).ok().as_deref(),
-        &desktop_refs,
-    );
-    // SAFETY: WebKit's version getters take no pointers and require no GTK
-    // initialization. They report the loaded library, not the build host.
-    let webkit_version = unsafe {
-        (
-            webkit2gtk::ffi::webkit_get_major_version(),
-            webkit2gtk::ffi::webkit_get_minor_version(),
-        )
-    };
-    if should_use_shm_renderer(webkit_version, safe_mode.as_deref(), disable_dmabuf)
-        && std::env::var_os(WEBKIT_DISABLE_DMABUF_RENDERER).is_none()
-        && std::env::var_os(WEBKIT_DISABLE_COMPOSITING_MODE).is_none()
-    {
-        // Unlike disabling the renderer, SHM keeps the backing store available
-        // for video while avoiding hardware-buffer imports (#1374, #1386).
-        if std::env::var_os(WEBKIT_DMABUF_RENDERER_FORCE_SHM).is_none() {
-            std::env::set_var(WEBKIT_DMABUF_RENDERER_FORCE_SHM, "1");
-        }
-        return;
-    }
-
-    if disable_dmabuf && std::env::var_os(WEBKIT_DISABLE_DMABUF_RENDERER).is_none() {
-        std::env::set_var(WEBKIT_DISABLE_DMABUF_RENDERER, "1");
-    }
-    if disable_compositing && std::env::var_os(WEBKIT_DISABLE_COMPOSITING_MODE).is_none() {
-        std::env::set_var(WEBKIT_DISABLE_COMPOSITING_MODE, "1");
-    }
-}
-
 pub fn run_app() {
-    #[cfg(target_os = "linux")]
-    {
-        apply_linux_gdk_backend();
-        apply_linux_webkit_runtime_flags();
-    }
-
     let (pake_config, tauri_config, runtime_app) = get_pake_config();
-    #[cfg(windows)]
-    if let Some(id) = util::app_user_model_id(runtime_app.as_ref()) {
-        util::set_app_user_model_id(id);
-    }
     let mut context = tauri::generate_context!();
     // Paths, app data and the macOS menu derive from the context, so a runtime
     // app must not share the template's identity.
@@ -346,7 +116,7 @@ pub fn run_app() {
                     cancel_startup_reveal(&instance_revealed);
                     let _ = window.unminimize();
                     let _ = window.show();
-                    reapply_window_icon(&window);
+
                     let _ = window.set_focus();
                 }
             },
@@ -393,7 +163,7 @@ pub fn run_app() {
 
     // Clone before setup moves the Arc into tray / shortcut / fallback handlers.
     let close_revealed = startup_window_revealed.clone();
-    #[cfg(target_os = "macos")]
+
     let reopen_revealed = startup_window_revealed.clone();
 
     app_builder
@@ -426,7 +196,7 @@ pub fn run_app() {
             app::notification::init_native_click(app.app_handle());
 
             // --- Menu Construction Start ---
-            #[cfg(target_os = "macos")]
+
             {
                 app::menu::set_app_menu(app.app_handle(), multi_window, _enable_find)?;
 
@@ -484,24 +254,13 @@ pub fn run_app() {
                     // Hide window when hide_on_close is enabled (regardless of tray status)
                     let window = _window.clone();
                     tauri::async_runtime::spawn(async move {
-                        #[cfg(target_os = "macos")]
                         {
                             if window.is_fullscreen().unwrap_or(false) {
                                 let _ = window.set_fullscreen(false);
                                 tokio::time::sleep(Duration::from_millis(900)).await;
                             }
                         }
-                        #[cfg(target_os = "linux")]
-                        {
-                            if window.is_fullscreen().unwrap_or(false) {
-                                let _ = window.set_fullscreen(false);
-                                // Restore focus after exiting fullscreen to fix input issues
-                                let _ = window.set_focus();
-                            }
-                        }
                         // On macOS, directly hide without minimize to avoid duplicate Dock icons
-                        #[cfg(not(target_os = "macos"))]
-                        let _ = window.minimize();
                         let _ = window.hide();
                     });
                     api.prevent_close();
@@ -520,7 +279,7 @@ pub fn run_app() {
                 save_last_url(_app);
             }
             // Handle macOS dock icon click to reopen hidden window
-            #[cfg(target_os = "macos")]
+
             if let tauri::RunEvent::Reopen {
                 has_visible_windows,
                 ..
@@ -530,7 +289,7 @@ pub fn run_app() {
                     if let Some(window) = _app.get_webview_window("pake") {
                         cancel_startup_reveal(&reopen_revealed);
                         let _ = window.show();
-                        reapply_window_icon(&window);
+
                         let _ = window.set_focus();
                     }
                 }
@@ -584,246 +343,5 @@ mod tests {
         let revealed = AtomicBool::new(false);
         cancel_startup_reveal(&revealed);
         assert!(!claim_startup_reveal(&revealed));
-    }
-
-    #[test]
-    fn dmabuf_renderer_stays_disabled_outside_niri() {
-        // #1117 was never Wayland-scoped, and upstream still reports the blank
-        // window it prevents on X11 with the NVIDIA proprietary driver.
-        let none = [None, None, None];
-        assert!(should_disable_dmabuf_renderer(None, None, &none));
-        assert!(should_disable_dmabuf_renderer(Some("1"), None, &none));
-    }
-
-    #[test]
-    fn dmabuf_renderer_can_be_re_enabled_explicitly() {
-        let none = [None, None, None];
-        for value in ["0", "false", "off", "no", "native", "disabled"] {
-            assert!(
-                !should_disable_dmabuf_renderer(Some(value), None, &none),
-                "expected {value} to restore the dmabuf renderer"
-            );
-        }
-    }
-
-    #[test]
-    fn dmabuf_renderer_is_kept_for_niri_socket() {
-        // #1226 was fixed by dropping both variables. Either one alone puts a
-        // niri session back into the state it reported, because both reach the
-        // same hardware-acceleration boolean in WebKitGTK 2.52.
-        assert!(!should_disable_dmabuf_renderer(
-            None,
-            Some("/run/user/501/niri.sock"),
-            &[None, None, None]
-        ));
-    }
-
-    #[test]
-    fn dmabuf_renderer_is_kept_for_niri_desktop() {
-        assert!(!should_disable_dmabuf_renderer(
-            None,
-            None,
-            &[Some("niri"), None, None]
-        ));
-    }
-
-    #[test]
-    fn dmabuf_renderer_can_be_forced_on_for_niri() {
-        assert!(should_disable_dmabuf_renderer(
-            Some("1"),
-            Some("/run/user/501/niri.sock"),
-            &[Some("niri"), None, None]
-        ));
-    }
-
-    #[test]
-    fn legacy_x11_keeps_dmabuf_disabled_and_skips_compositing() {
-        // The shape of #1374: an X11 session still gets the stability flag it
-        // has had since #1117, and does not get the compositing one. Both clear
-        // the same hardware-acceleration boolean, so leaving compositing unset
-        // here does not by itself restore acceleration.
-        let desktop = [Some("i3"), None, None];
-        assert!(should_disable_dmabuf_renderer(None, None, &desktop));
-        assert!(!should_disable_compositing_mode(
-            None, None, None, None, &desktop
-        ));
-    }
-
-    #[test]
-    fn explicit_x11_gdk_backend_keeps_compositing_on_wayland() {
-        // An explicit X11 backend skips the Wayland-only workaround even
-        // when a Wayland compositor is available.
-        assert!(!should_disable_compositing_mode(
-            None,
-            None,
-            Some("wayland-0"),
-            Some("x11"),
-            &[None, None, None]
-        ));
-        // An explicit wayland backend is still a Wayland session.
-        assert!(should_disable_compositing_mode(
-            None,
-            None,
-            Some("wayland-0"),
-            Some("wayland"),
-            &[None, None, None]
-        ));
-    }
-
-    #[test]
-    fn modern_x11_uses_shm_without_disabling_the_backing_store() {
-        let desktop = [Some("i3"), None, None];
-        assert!(should_use_shm_renderer(
-            (2, 52),
-            None,
-            should_disable_dmabuf_renderer(None, None, &desktop),
-        ));
-        assert!(should_use_shm_renderer((2, 52), Some(" "), true));
-    }
-
-    #[test]
-    fn modern_wayland_uses_shm_instead_of_disabling_compositing() {
-        // The shape of #1386: GNOME Wayland on WebKitGTK 2.52 got both legacy
-        // flags, which turn hardware acceleration off and crash video.
-        let desktop = [Some("GNOME"), None, None];
-        assert!(should_disable_compositing_mode(
-            None,
-            None,
-            Some("wayland-0"),
-            None,
-            &desktop
-        ));
-        assert!(should_use_shm_renderer(
-            (2, 52),
-            None,
-            should_disable_dmabuf_renderer(None, None, &desktop),
-        ));
-    }
-
-    #[test]
-    fn shm_preserves_legacy_webkit_niri_and_explicit_modes() {
-        assert!(!should_use_shm_renderer((2, 50), None, true));
-        assert!(!should_use_shm_renderer((2, 38), None, true));
-        let niri = [Some("niri"), None, None];
-        assert!(!should_use_shm_renderer(
-            (2, 52),
-            None,
-            should_disable_dmabuf_renderer(None, None, &niri),
-        ));
-        for mode in ["0", "false", "1", "true"] {
-            assert!(!should_use_shm_renderer((2, 52), Some(mode), true));
-        }
-    }
-
-    #[test]
-    fn compositing_mode_stays_disabled_by_default_on_wayland() {
-        assert!(should_disable_compositing_mode(
-            None,
-            None,
-            Some("wayland-0"),
-            None,
-            &[None, None, None]
-        ));
-    }
-
-    #[test]
-    fn compositing_mode_can_be_forced_on_x11() {
-        assert!(should_disable_compositing_mode(
-            Some("1"),
-            None,
-            None,
-            None,
-            &[Some("i3"), None, None]
-        ));
-    }
-
-    #[test]
-    fn compositing_mode_is_kept_for_niri_socket() {
-        assert!(!should_disable_compositing_mode(
-            None,
-            Some("/run/user/501/niri.sock"),
-            Some("wayland-0"),
-            None,
-            &[None, None, None]
-        ));
-    }
-
-    #[test]
-    fn compositing_mode_is_kept_for_niri_desktop() {
-        assert!(!should_disable_compositing_mode(
-            None,
-            None,
-            Some("wayland-0"),
-            None,
-            &[Some("niri"), None, None]
-        ));
-    }
-
-    #[test]
-    fn compositing_mode_can_be_forced_on_for_niri() {
-        assert!(should_disable_compositing_mode(
-            Some("1"),
-            Some("/run/user/501/niri.sock"),
-            Some("wayland-0"),
-            None,
-            &[Some("niri"), None, None]
-        ));
-    }
-
-    #[test]
-    fn compositing_mode_can_be_disabled_explicitly() {
-        for value in ["0", "false", "off", "no", "native", "disabled"] {
-            assert!(
-                !should_disable_compositing_mode(
-                    Some(value),
-                    None,
-                    Some("wayland-0"),
-                    None,
-                    &[None, None, None]
-                ),
-                "expected {value} to restore compositing"
-            );
-        }
-    }
-
-    #[test]
-    fn forces_wayland_backend_on_pure_wayland() {
-        assert!(should_force_wayland_gdk_backend(
-            None,
-            Some("wayland-0"),
-            None
-        ));
-    }
-
-    #[test]
-    fn forces_wayland_backend_when_display_is_blank() {
-        assert!(should_force_wayland_gdk_backend(
-            None,
-            Some("wayland-0"),
-            Some("   ")
-        ));
-    }
-
-    #[test]
-    fn keeps_default_backend_when_x11_display_present() {
-        assert!(!should_force_wayland_gdk_backend(
-            None,
-            Some("wayland-0"),
-            Some(":0")
-        ));
-    }
-
-    #[test]
-    fn keeps_default_backend_without_wayland_display() {
-        assert!(!should_force_wayland_gdk_backend(None, None, None));
-    }
-
-    #[test]
-    fn respects_explicit_gdk_backend_override() {
-        assert!(!should_force_wayland_gdk_backend(
-            Some("x11"),
-            Some("wayland-0"),
-            None
-        ));
     }
 }

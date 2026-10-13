@@ -28,7 +28,7 @@ pub fn set_system_tray(
 
     // Menu events are broadcast to every handler in Tauri v2, so the tray item
     // must not share the "new_window" id with the app menu accelerator
-    // (Cmd/Ctrl+N), or one click opens two windows.
+    // (Cmd+N), or one click opens two windows.
     let new_window = MenuItemBuilder::with_id("tray_new_window", "New Window").build(app)?;
     let hide_app = MenuItemBuilder::with_id("hide_app", "Hide").build(app)?;
     let show_app = MenuItemBuilder::with_id("show_app", "Show").build(app)?;
@@ -81,7 +81,7 @@ pub fn set_system_tray(
                 ..
             } = event
             {
-                // Windows emits Click twice per physical click (Down then Up).
+                // Toggle only on button release, once per click.
                 // Reacting to both runs the toggle twice, so a hidden window is
                 // shown and immediately re-hidden and the tray looks dead (#1343).
                 if button == MouseButton::Left && button_state == MouseButtonState::Up {

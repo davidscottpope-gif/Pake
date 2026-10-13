@@ -44,7 +44,6 @@ fn apply_badge(app: &AppHandle, count: Option<i64>) -> Result<(), String> {
     apply_badge_label(app, label.as_deref())
 }
 
-#[cfg(target_os = "macos")]
 fn apply_badge_label(app: &AppHandle, label: Option<&str>) -> Result<(), String> {
     use objc2::MainThreadMarker;
     use objc2_app_kit::NSApplication;
@@ -60,17 +59,6 @@ fn apply_badge_label(app: &AppHandle, label: Option<&str>) -> Result<(), String>
         dock_tile.setBadgeLabel(ns_label.as_deref());
     })
     .map_err(|e| format!("Failed to dispatch dock badge update: {e}"))
-}
-
-#[cfg(not(target_os = "macos"))]
-fn apply_badge_label(app: &AppHandle, label: Option<&str>) -> Result<(), String> {
-    let window = app
-        .get_webview_window("pake")
-        .ok_or("Main window not found")?;
-    let count = label.and_then(|s| s.parse::<i64>().ok());
-    window
-        .set_badge_count(count)
-        .map_err(|e| format!("Failed to set badge count: {e}"))
 }
 
 #[derive(serde::Deserialize)]
@@ -92,7 +80,7 @@ pub struct DownloadFileParams {
 fn cookie_header_for_url(window: &WebviewWindow, url: &Url) -> Option<HeaderValue> {
     // Wry 0.54 compares Cookie.domain to Url.domain, which is None for IPs
     // on macOS. Read this window's store only for that broken branch.
-    #[cfg(target_os = "macos")]
+
     let cookies = if url.host_str().is_some_and(|host| {
         host.trim_matches(['[', ']'])
             .parse::<std::net::IpAddr>()
@@ -109,8 +97,6 @@ fn cookie_header_for_url(window: &WebviewWindow, url: &Url) -> Option<HeaderValu
     } else {
         window.cookies_for_url(url.clone()).ok()?
     };
-    #[cfg(not(target_os = "macos"))]
-    let cookies = window.cookies_for_url(url.clone()).ok()?;
     if cookies.is_empty() {
         return None;
     }
@@ -122,7 +108,6 @@ fn cookie_header_for_url(window: &WebviewWindow, url: &Url) -> Option<HeaderValu
     HeaderValue::from_str(&header).ok()
 }
 
-#[cfg(target_os = "macos")]
 fn cookie_matches_ip_url(cookie: &tauri::webview::Cookie<'_>, url: &Url, now: u64) -> bool {
     use std::net::IpAddr;
     let target = url
@@ -478,7 +463,6 @@ pub fn set_title_bar_color(
     green: u8,
     blue: u8,
 ) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
     {
         window
             .as_ref()
@@ -486,15 +470,9 @@ pub fn set_title_bar_color(
             .set_background_color(Some(tauri::window::Color(red, green, blue, 255)))
             .map_err(|e| format!("Failed to set the title bar color: {}", e))
     }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let _ = (window, red, green, blue);
-        Ok(())
-    }
 }
 
-// Apply native WebView zoom (WKWebView pageZoom / WebView2 ZoomFactor / WebKitGTK
-// zoom level) instead of CSS hacks. CSS `transform: scale` and `html.style.zoom`
+// Apply native WKWebView zoom instead of CSS hacks. CSS `transform: scale` and `html.style.zoom`
 // break complex SPAs like ChatGPT (fixed positioning shifts, unrepainted layers);
 // native zoom recalculates layout the same way a browser does for Cmd/Ctrl +/-.
 #[command]
@@ -505,7 +483,7 @@ pub fn set_zoom(window: WebviewWindow, percent: f64) -> Result<(), String> {
         .map_err(|e| format!("Failed to set zoom: {}", e))
 }
 
-/// Native navigation for injected shortcuts (Linux/Windows Ctrl+R / [ / ]).
+/// Native navigation for injected shortcuts and menu actions.
 /// Blank error pages have no JS context, so page `history` / `location` calls
 /// are no-ops; these use the platform webview API instead.
 #[command]
@@ -688,7 +666,6 @@ mod tests {
         assert!(trusted_page_url(Some("https://victim.example/"), Some(&local)).is_none());
     }
 
-    #[cfg(target_os = "macos")]
     #[test]
     fn ip_cookie_selection_keeps_domain_path_secure_and_expiry_boundaries() {
         use tauri::webview::Cookie;

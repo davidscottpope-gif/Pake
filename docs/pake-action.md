@@ -12,7 +12,7 @@ Call Pake from your own GitHub Actions workflow to turn any webpage into a light
 
 ```yaml
 - name: Build Pake App
-  uses: tw93/Pake@v3
+  uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
   with:
     url: "https://example.com"
     name: "MyApp"
@@ -46,10 +46,10 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: tw93/Pake@v3
+      - uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
         with:
           url: "https://weekly.tw93.fun"
           name: "WeeklyApp"
@@ -58,30 +58,13 @@ jobs:
 ### With Custom Icon
 
 ```yaml
-- uses: tw93/Pake@v3
+- uses: davidscottpope-gif/Pake@feature/macos-only-ts-js-cleanup
   with:
     url: "https://example.com"
     name: "MyApp"
     icon: "https://example.com/icon.png"
     width: 1400
     height: 900
-```
-
-### Multi-Platform Build
-
-```yaml
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: tw93/Pake@v3
-        with:
-          url: "https://example.com"
-          name: "CrossPlatformApp"
 ```
 
 ## How It Works
@@ -92,11 +75,9 @@ jobs:
 
 ## Supported Platforms
 
-- **Linux**: `.deb` package (Ubuntu runners)
 - **macOS**: `.app` bundle (macOS runners)
-- **Windows**: `.msi` or `.exe` (Windows runners)
 
-Each run moves only the first package it finds into the output directory and reports it as `package-path`. Use GitHub's matrix strategy to build for multiple platforms simultaneously.
+Each run moves only the first package it finds into the output directory and reports it as `package-path`.
 
 ## Related Documentation
 
