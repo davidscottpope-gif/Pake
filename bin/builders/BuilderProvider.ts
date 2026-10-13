@@ -1,4 +1,3 @@
-import BaseBuilder from './BaseBuilder';
 import MacBuilder from './MacBuilder';
 import { PakeAppOptions } from '@/types';
 
@@ -6,7 +5,7 @@ import { PakeAppOptions } from '@/types';
 // the provider just refuses to run anywhere else. (Upstream picks among
 // MacBuilder, WinBuilder and LinuxBuilder by process.platform.)
 export default class BuilderProvider {
-  static create(options: PakeAppOptions): BaseBuilder {
+  static create(options: PakeAppOptions): MacBuilder {
     if (process.platform !== 'darwin') {
       throw new Error('This fork only supports building on macOS.');
     }

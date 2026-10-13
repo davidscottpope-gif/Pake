@@ -14,7 +14,6 @@ vi.mock('@/utils/dir', () => ({
   tauriConfigDirectory: path.join(process.cwd(), 'src-tauri', '.pake'),
 }));
 
-import BaseBuilder from '@/builders/BaseBuilder';
 import MacBuilder from '@/builders/MacBuilder';
 import {
   _resetPackageManagerCache,
@@ -26,7 +25,8 @@ import {
 import logger from '@/options/logger';
 import { CN_MIRROR_ENV, isCnMirrorEnabled } from '@/utils/mirror';
 
-class TestBuilder extends BaseBuilder {
+// Test-only overrides keep environment and command checks isolated.
+class TestBuilder extends MacBuilder {
   getFileName(): string {
     return 'test-app';
   }
@@ -104,7 +104,7 @@ function mockPackageManagers(options: {
   });
 }
 
-describe('BaseBuilder guards', () => {
+describe('MacBuilder and build environment guards', () => {
   afterEach(async () => {
     vi.restoreAllMocks();
     execaMock.mockReset();
@@ -305,13 +305,97 @@ describe('BaseBuilder guards', () => {
     );
   });
 
-  it('keeps the BaseBuilder hierarchy intact', () => {
-    // Sanity check that subclasses can still construct against the slimmer
-    // BaseBuilder after env helpers were extracted.
-    const builder = new TestBuilder({} as any);
-    expect(builder).toBeInstanceOf(BaseBuilder);
-    expect(builder.getFileName()).toBe('test-app');
-    expect(builder.getReportArch()).toBe('test-arch');
+  it('constructs the concrete Mac builder without a base class', () => {
+    const builder = new MacBuilder({ targets: 'app', name: 'Demo' } as any);
+    expect(builder.getFileName()).toBe('Demo');
+    expect(builder.getReportArch()).toBe(process.arch);
+    expect(builder.getArtifacts()).toEqual([]);
+  });
+
+  it('keeps preparation, build and artifact copying in order', async () => {
+    mockPackageManagers({ pnpm: '10.26.2' });
+    const builder = new MacBuilder({ targets: 'app' } as any);
+    const steps: string[] = [];
+    vi.spyOn(builder as any, 'prepareBuild').mockImplementation(async () => {
+      steps.push('prepare');
+    });
+    const build = vi
+      .spyOn(builder as any, 'runBuildCommand')
+      .mockImplementation(async () => {
+        steps.push('build');
+      });
+    const copy = vi
+      .spyOn(builder as any, 'copyBuildArtifacts')
+      .mockImplementation(async () => {
+        steps.push('copy');
+      });
+
+    await builder.buildAndCopy('https://example.com', 'app', false);
+
+    expect(steps).toEqual(['prepare', 'build', 'copy']);
+    expect(build).toHaveBeenCalledWith(
+      expect.objectContaining({ executable: 'pnpm' }),
+      'app',
+    );
+    expect(copy).toHaveBeenCalledWith('app', false);
+  });
+
+  it('does not copy artifacts when the build fails', async () => {
+    mockPackageManagers({ pnpm: '10.26.2' });
+    const builder = new MacBuilder({ targets: 'app' } as any);
+    vi.spyOn(builder as any, 'prepareBuild').mockResolvedValue(undefined);
+    vi.spyOn(builder as any, 'runBuildCommand').mockRejectedValue(
+      new Error('build failed'),
+    );
+    const copy = vi
+      .spyOn(builder as any, 'copyBuildArtifacts')
+      .mockResolvedValue(undefined);
+
+    await expect(
+      builder.buildAndCopy('https://example.com', 'app'),
+    ).rejects.toThrow('build failed');
+    expect(copy).not.toHaveBeenCalled();
+  });
+
+  it('does not start a build when preparation fails', async () => {
+    const builder = new MacBuilder({ targets: 'app' } as any);
+    vi.spyOn(builder as any, 'prepareBuild').mockRejectedValue(
+      new Error('prepare failed'),
+    );
+    const build = vi
+      .spyOn(builder as any, 'runBuildCommand')
+      .mockResolvedValue(undefined);
+    const copy = vi
+      .spyOn(builder as any, 'copyBuildArtifacts')
+      .mockResolvedValue(undefined);
+
+    await expect(
+      builder.buildAndCopy('https://example.com', 'app'),
+    ).rejects.toThrow('prepare failed');
+    expect(build).not.toHaveBeenCalled();
+    expect(copy).not.toHaveBeenCalled();
+  });
+
+  it('keeps recursive artifact sizes and returns a separate artifact array', async () => {
+    const root = await fsExtra.mkdtemp(
+      path.join(os.tmpdir(), 'pake-artifact-'),
+    );
+    tempDirs.push(root);
+    const bundle = path.join(root, 'Demo.app');
+    await fsExtra.outputFile(path.join(bundle, 'Contents', 'one'), 'abc');
+    await fsExtra.outputFile(
+      path.join(bundle, 'Contents', 'nested', 'two'),
+      'de',
+    );
+    const builder = new MacBuilder({ targets: 'app' } as any);
+    await (builder as any).recordArtifact(bundle, 'app');
+
+    expect(builder.getArtifacts()).toEqual([
+      { path: bundle, sizeBytes: 5, format: 'app' },
+    ]);
+    const returned = builder.getArtifacts();
+    returned.length = 0;
+    expect(builder.getArtifacts()).toHaveLength(1);
   });
 
   it('builds with generated .pake config and cli-build feature', () => {
