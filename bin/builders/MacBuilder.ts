@@ -37,16 +37,7 @@ export default class MacBuilder extends BaseBuilder {
       return name;
     }
 
-    let arch: string;
-    if (this.buildArch === 'universal' || this.options.multiArch) {
-      arch = 'universal';
-    } else if (this.buildArch === 'apple') {
-      arch = 'aarch64';
-    } else if (this.buildArch === 'intel') {
-      arch = 'x64';
-    } else {
-      arch = this.getArchDisplayName(this.resolveTargetArch(this.buildArch));
-    }
+    const arch = this.getArchDisplayName(this.getActualArch());
     return `${name}_${this.options.appVersion}_${arch}`;
   }
 
@@ -67,26 +58,16 @@ export default class MacBuilder extends BaseBuilder {
 
   protected getBuildCommand(packageManager: string = 'pnpm'): ShellCommand {
     const configPath = path.join('src-tauri', '.pake', 'tauri.conf.json');
-    const actualArch = this.getActualArch();
-
-    const buildTarget = this.getTauriTarget(actualArch, 'darwin');
-    if (!buildTarget) {
-      throw new Error(`Unsupported architecture: ${actualArch} for macOS`);
-    }
-
-    return this.buildBaseCommand(packageManager, configPath, buildTarget);
+    return this.buildBaseCommand(
+      packageManager,
+      configPath,
+      this.getMacOSTarget(),
+    );
   }
 
   protected getBasePath(): string {
     const basePath = this.options.debug ? 'debug' : 'release';
-    const actualArch = this.getActualArch();
-    const target = this.getTauriTarget(actualArch, 'darwin');
-
-    if (!target) {
-      throw new Error(`Unsupported architecture: ${actualArch} for macOS`);
-    }
-
-    return path.join(this.getCargoTargetDir(), target, basePath, 'bundle');
+    return path.join(this.getArchSpecificPath(), basePath, 'bundle');
   }
 
   protected hasArchSpecificTarget(): boolean {
@@ -94,11 +75,15 @@ export default class MacBuilder extends BaseBuilder {
   }
 
   protected getArchSpecificPath(): string {
+    return path.join(this.getCargoTargetDir(), this.getMacOSTarget());
+  }
+
+  private getMacOSTarget(): string {
     const actualArch = this.getActualArch();
     const target = this.getTauriTarget(actualArch, 'darwin');
     if (!target) {
       throw new Error(`Unsupported architecture: ${actualArch} for macOS`);
     }
-    return path.join(this.getCargoTargetDir(), target);
+    return target;
   }
 }
