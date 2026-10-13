@@ -70,10 +70,6 @@ export default class MacBuilder extends BaseBuilder {
     return path.join(this.getArchSpecificPath(), basePath, 'bundle');
   }
 
-  protected hasArchSpecificTarget(): boolean {
-    return true;
-  }
-
   protected getArchSpecificPath(): string {
     return path.join(this.getCargoTargetDir(), this.getMacOSTarget());
   }

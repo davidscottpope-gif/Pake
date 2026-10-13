@@ -30,6 +30,25 @@ class TestBuilder extends BaseBuilder {
   getFileName(): string {
     return 'test-app';
   }
+
+  getReportArch(): string {
+    return 'test-arch';
+  }
+
+  protected getBuildCommand(packageManager = 'pnpm') {
+    return this.buildBaseCommand(
+      packageManager,
+      path.join(process.cwd(), 'src-tauri', '.pake', 'tauri.conf.json'),
+    );
+  }
+
+  protected getBasePath(): string {
+    return path.join(this.getArchSpecificPath(), 'release', 'bundle');
+  }
+
+  protected getArchSpecificPath(): string {
+    return path.join(this.getCargoTargetDir(), 'test-target');
+  }
 }
 
 const originalCnMirrorEnv = process.env[CN_MIRROR_ENV];
@@ -292,12 +311,13 @@ describe('BaseBuilder guards', () => {
     const builder = new TestBuilder({} as any);
     expect(builder).toBeInstanceOf(BaseBuilder);
     expect(builder.getFileName()).toBe('test-app');
+    expect(builder.getReportArch()).toBe('test-arch');
   });
 
   it('builds with generated .pake config and cli-build feature', () => {
     const builder = new TestBuilder({
       debug: false,
-      targets: 'deb',
+      targets: 'app',
     } as any);
 
     const command = (builder as any).getBuildCommand('pnpm');
@@ -336,6 +356,62 @@ describe('BaseBuilder guards', () => {
         'aarch64-apple-darwin',
         '--verbose',
       ]);
+    },
+  );
+
+  it.each([false, true])(
+    'uses the subclass target path for raw binaries with multiArch=%s',
+    (multiArch) => {
+      const builder = new TestBuilder({ multiArch, debug: true } as any);
+      const source = (builder as any).getRawBinarySourcePath(
+        process.cwd(),
+        'Demo',
+      );
+      expect(source).toBe(
+        path.join(
+          process.cwd(),
+          'src-tauri',
+          'target',
+          'test-target',
+          'debug',
+          'pake-demo',
+        ),
+      );
+    },
+  );
+
+  it.each(
+    ['apple', 'intel', 'universal'].flatMap((targets) =>
+      [false, true].flatMap((multiArch) =>
+        [false, true].flatMap((debug) =>
+          [
+            '.relative-target',
+            path.join(process.cwd(), '.absolute-target'),
+          ].map((root) => ({ targets, multiArch, debug, root })),
+        ),
+      ),
+    ),
+  )(
+    'preserves real Mac binary lookup for %j',
+    ({ targets, multiArch, debug, root }) => {
+      process.env.CARGO_TARGET_DIR = root;
+      const builder = new MacBuilder({ targets, multiArch, debug } as any);
+      const target =
+        multiArch || targets === 'universal'
+          ? 'universal-apple-darwin'
+          : targets === 'apple'
+            ? 'aarch64-apple-darwin'
+            : 'x86_64-apple-darwin';
+      expect(
+        (builder as any).getRawBinarySourcePath(process.cwd(), 'Demo'),
+      ).toBe(
+        path.join(
+          path.isAbsolute(root) ? root : path.join(process.cwd(), root),
+          target,
+          debug ? 'debug' : 'release',
+          'pake-demo',
+        ),
+      );
     },
   );
 

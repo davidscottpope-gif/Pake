@@ -38,9 +38,7 @@ export default abstract class BaseBuilder {
   }
 
   /** Architecture reported in the `--json` result. */
-  getReportArch(): string {
-    return this.options.multiArch ? 'universal' : process.arch;
-  }
+  abstract getReportArch(): string;
 
   protected async recordArtifact(
     artifactPath: string,
@@ -374,24 +372,7 @@ export default abstract class BaseBuilder {
     return features;
   }
 
-  protected getBuildCommand(packageManager: string = 'pnpm'): ShellCommand {
-    // Use temporary config directory to avoid modifying source files
-    const configPath = path.join(
-      npmDirectory,
-      'src-tauri',
-      '.pake',
-      'tauri.conf.json',
-    );
-
-    const fullCommand = this.buildBaseCommand(packageManager, configPath);
-
-    // For macOS, use app bundles by default unless DMG is explicitly requested
-    if (this.options.targets === 'app') {
-      fullCommand.args.push('--bundles', 'app');
-    }
-
-    return fullCommand;
-  }
+  protected abstract getBuildCommand(packageManager?: string): ShellCommand;
 
   protected getMacOSMajorVersion(): number {
     try {
@@ -414,10 +395,7 @@ export default abstract class BaseBuilder {
       : path.join(npmDirectory, buildPath);
   }
 
-  protected getBasePath(): string {
-    const basePath = this.options.debug ? 'debug' : 'release';
-    return path.join(this.getCargoTargetDir(), basePath, 'bundle');
-  }
+  protected abstract getBasePath(): string;
 
   protected getBuildAppPath(
     npmDirectory: string,
@@ -462,17 +440,8 @@ export default abstract class BaseBuilder {
     const basePath = this.options.debug ? 'debug' : 'release';
     const binaryName = this.getBinaryName(appName);
 
-    // Handle cross-platform builds
-    if (this.options.multiArch || this.hasArchSpecificTarget()) {
-      return path.join(
-        this.resolveBuildPath(npmDirectory, this.getArchSpecificPath()),
-        basePath,
-        binaryName,
-      );
-    }
-
     return path.join(
-      this.resolveBuildPath(npmDirectory, this.getCargoTargetDir()),
+      this.resolveBuildPath(npmDirectory, this.getArchSpecificPath()),
       basePath,
       binaryName,
     );
@@ -492,17 +461,6 @@ export default abstract class BaseBuilder {
     return `pake-${generateIdentifierSafeName(appName)}`;
   }
 
-  /**
-   * Check if this build has architecture-specific target
-   */
-  protected hasArchSpecificTarget(): boolean {
-    return false; // Override in subclasses if needed
-  }
-
-  /**
-   * Get architecture-specific path for binary
-   */
-  protected getArchSpecificPath(): string {
-    return this.getCargoTargetDir(); // Override in subclasses if needed
-  }
+  /** Directory containing this architecture's debug/release outputs. */
+  protected abstract getArchSpecificPath(): string;
 }
