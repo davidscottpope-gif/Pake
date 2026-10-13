@@ -56,13 +56,17 @@ describe('CLI options', () => {
     expect(option?.optional).toBe(false);
   });
 
-  it('registers password autosave as a hidden Windows opt-in', () => {
-    const option = program.options.find(
-      (item) => item.long === '--password-autosave',
-    );
-    expect(option?.defaultValue).toBe(false);
-    expect(option?.hidden).toBe(true);
-    expect(option?.required).toBe(false);
+  it('no longer registers Windows/Linux-only flags', () => {
+    const longs = program.options.map((item) => item.long);
+    for (const flag of [
+      '--password-autosave',
+      '--windows-toolchain',
+      '--installer-language',
+      '--no-bundle',
+      '--hide-window-decorations',
+    ]) {
+      expect(longs).not.toContain(flag);
+    }
   });
 
   it('exposes --internal-url-regex option', () => {

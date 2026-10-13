@@ -508,38 +508,13 @@ window.addEventListener("DOMContentLoaded", (_event) => {
       }
     }
   `;
-  const isMac = /Mac/i.test(navigator.userAgent);
   if (hasImmersiveHeader(window["pakeConfig"])) {
-    const topPaddingCSSForPlatform = isMac
-      ? topPaddingCSS
-      : `
-    #pake-top-dom:active {
-      cursor: grabbing;
-      cursor: -webkit-grabbing;
-    }
-
-    #pake-top-dom {
-      position: fixed;
-      background: transparent;
-      top: 0;
-      width: 100%;
-      height: 20px;
-      cursor: grab;
-      -webkit-app-region: drag;
-      user-select: none;
-      -webkit-user-select: none;
-      z-index: 99999;
-    }
-    `;
     if (typeof window.__PAKE_INJECT_STYLE__ === "function") {
-      window.__PAKE_INJECT_STYLE__(
-        topPaddingCSSForPlatform,
-        "pake-top-padding-style",
-      );
+      window.__PAKE_INJECT_STYLE__(topPaddingCSS, "pake-top-padding-style");
     } else {
       const topPaddingStyleElement = document.createElement("style");
       topPaddingStyleElement.id = "pake-top-padding-style";
-      topPaddingStyleElement.textContent = topPaddingCSSForPlatform;
+      topPaddingStyleElement.textContent = topPaddingCSS;
       document.head.appendChild(topPaddingStyleElement);
     }
   }

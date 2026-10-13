@@ -1,6 +1,3 @@
-export type SupportedPlatform = 'win32' | 'darwin' | 'linux';
-export type TauriPlatform = 'windows' | 'macos' | 'linux';
-
 export interface PakeCliOptions {
   // Application name
   name?: string;
@@ -32,16 +29,13 @@ export interface PakeCliOptions {
   // Enable immersive header, default false. macOS only.
   hideTitleBar: boolean;
 
-  // Hide native window decorations, default false. Windows and Linux only.
-  hideWindowDecorations: boolean;
-
   // Enable windows always on top, default false
   alwaysOnTop: boolean;
 
   // App version, the same as package.json version, default 1.0.0
   appVersion: string;
 
-  // Force app to use dark mode (supports macOS, Windows, and Linux), default false
+  // Force app to use dark mode default false
   darkMode: boolean;
 
   // Disable web shortcuts, default false
@@ -53,10 +47,10 @@ export interface PakeCliOptions {
   // Custom User-Agent, default off
   userAgent: string;
 
-  // Enable system tray, default off for macOS, on for Windows and Linux
+  // Enable system tray, default off
   showSystemTray: boolean;
 
-  // Tray icon, default same as app icon for Windows and Linux, macOS requires separate png or ico
+  // Tray icon, macOS requires a separate png or ico
   systemTrayIcon: string;
 
   // Recursive copy, when url is a local file path, if this option is enabled, the url path file and all its subFiles will be copied to the pake static file folder, default off
@@ -65,14 +59,9 @@ export interface PakeCliOptions {
   // Multi arch, supports both Intel and M1 chips, only for Mac
   multiArch: boolean;
 
-  // Build target architecture/format:
-  // Linux: "deb", "appimage", "rpm", "zst" and "*-arm64" variants; Windows: "x64", "arm64"; macOS: "intel", "apple", "universal"
+  // Build target: "dmg" (default) or "app". MacBuilder also reads the
+  // architecture values "intel", "apple", "universal" from here.
   targets: string;
-
-  // Windows Rust toolchain: 'msvc' (default, Tauri's recommended toolchain)
-  // or 'gnu' (MinGW/MSYS2, for machines without Visual Studio Build Tools).
-  // Undefined keeps today's msvc-only behavior. Windows only; ignored elsewhere.
-  windowsToolchain?: 'msvc' | 'gnu';
 
   // Debug mode, outputs more logs
   debug: boolean;
@@ -95,10 +84,7 @@ export interface PakeCliOptions {
   // Prompt for HTTP Basic credentials at runtime on macOS, default false.
   basicAuth: boolean;
 
-  // Installer language, valid for Windows users, default is en-US
-  installerLanguage: string;
-
-  // Hide window on close instead of exiting, platform-specific: true for macOS, false for others
+  // Hide window on close instead of exiting, default true
   hideOnClose: boolean | undefined;
 
   // Launch app in incognito/private mode, default false
@@ -107,18 +93,11 @@ export interface PakeCliOptions {
   // Restore the last main-window URL on launch, default true
   restoreLastUrl: boolean;
 
-  // Enable native WebView2 password-save prompts on Windows, default false
-  passwordAutosave: boolean;
-
   // Enable WebAssembly support (Flutter Web, etc.), default false
   wasm: boolean;
 
   // Enable drag and drop functionality, default false
   enableDragDrop: boolean;
-
-  // Build the executable without packaging it into an installer (Linux only),
-  // default true. Set false via --no-bundle for RPM distros where the bundler aborts.
-  bundle: boolean;
 
   // Keep raw binary file alongside installer, default false
   keepBinary: boolean;
@@ -156,7 +135,7 @@ export interface PakeCliOptions {
   // Ignore certificate errors (for self-signed certs), default false
   ignoreCertificateErrors: boolean;
 
-  // Turn on rapid build mode (app only, no dmg/deb/msi), good for debugging
+  // Turn on rapid build mode (app only, no dmg), good for debugging
   iterativeBuild: boolean;
 
   // Allow sites to open new windows, default false
@@ -176,6 +155,9 @@ export interface PakeAppOptions extends PakeCliOptions {
   identifier: string;
 }
 
+// Mirrors the Rust PlatformSpecific struct, which requires all three keys when
+// pake.json is deserialized. Only `macos` is used by this fork; linux/windows
+// stay until the Rust side drops them.
 export interface PlatformSpecific<T> {
   macos: T;
   linux: T;
@@ -237,15 +219,6 @@ export interface PakeTauriConfig {
     icon?: string[];
     resources?: string[];
     targets?: string[];
-    linux?: {
-      deb: { files?: Record<string, string> };
-      rpm?: { files?: Record<string, string> };
-      [key: string]: unknown;
-    };
-    windows?: {
-      wix: { language: string[] };
-      [key: string]: unknown;
-    };
     [key: string]: unknown;
   };
   app: {

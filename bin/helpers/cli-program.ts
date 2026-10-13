@@ -46,11 +46,6 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     )
     .option('--fullscreen', 'Start in full screen', DEFAULT.fullscreen)
     .option('--hide-title-bar', 'For Mac, hide title bar', DEFAULT.hideTitleBar)
-    .option(
-      '--hide-window-decorations',
-      'Hide native window decorations on Windows and Linux',
-      DEFAULT.hideWindowDecorations,
-    )
     .option('--multi-arch', 'For Mac, both Intel and M1', DEFAULT.multiArch)
     .option(
       '--inject <files>',
@@ -108,14 +103,8 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     .addOption(
       new Option(
         '--targets <string>',
-        'Build target format for your system',
+        'Build target: dmg (default) or app',
       ).default(DEFAULT.targets),
-    )
-    .addOption(
-      new Option(
-        '--windows-toolchain <toolchain>',
-        'Windows Rust toolchain: msvc (default, requires Visual Studio Build Tools) or gnu (MinGW/MSYS2, for machines without them)',
-      ).choices(['msvc', 'gnu']),
     )
     .addOption(
       new Option(
@@ -136,10 +125,7 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
         .hideHelp(),
     )
     .addOption(
-      new Option(
-        '--dark-mode',
-        'Force app to use dark mode (supports macOS, Windows, and Linux)',
-      )
+      new Option('--dark-mode', 'Force app to use dark mode')
         .default(DEFAULT.darkMode)
         .hideHelp(),
     )
@@ -166,7 +152,7 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     .addOption(
       new Option(
         '--hide-on-close [boolean]',
-        'Hide window on close instead of exiting (default: true for macOS, false for others)',
+        'Hide window on close instead of exiting (default: true)',
       )
         .default(DEFAULT.hideOnClose)
         .argParser((value) => {
@@ -194,14 +180,6 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
         .hideHelp(),
     )
     .addOption(
-      new Option(
-        '--password-autosave',
-        'Enable native password-save prompts on Windows',
-      )
-        .default(DEFAULT.passwordAutosave)
-        .hideHelp(),
-    )
-    .addOption(
       new Option('--wasm', 'Enable WebAssembly support (Flutter Web, etc.)')
         .default(DEFAULT.wasm)
         .hideHelp(),
@@ -214,14 +192,6 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     .addOption(
       new Option('--keep-binary', 'Keep raw binary file alongside installer')
         .default(DEFAULT.keepBinary)
-        .hideHelp(),
-    )
-    .addOption(
-      new Option(
-        '--no-bundle',
-        'Skip packaging, output only the raw executable (Linux; for RPM distros where the bundler aborts)',
-      )
-        .default(DEFAULT.bundle)
         .hideHelp(),
     )
     .addOption(
@@ -263,14 +233,9 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     .addOption(
       new Option(
         '--enable-find',
-        'Enable in-page Find UI with Cmd/Ctrl+F/G shortcuts',
+        'Enable in-page Find UI with Cmd+F/G shortcuts',
       )
         .default(DEFAULT.enableFind)
-        .hideHelp(),
-    )
-    .addOption(
-      new Option('--installer-language <string>', 'Installer language')
-        .default(DEFAULT.installerLanguage)
         .hideHelp(),
     )
     .addOption(
@@ -310,7 +275,7 @@ ${green('|_|   \\__,_|_|\\_\\___|  can turn any webpage into a desktop app with 
     .addOption(
       new Option(
         '--iterative-build',
-        'Turn on rapid build mode (app only, no dmg/deb/msi), good for debugging',
+        'Turn on rapid build mode (app only, no dmg), good for debugging',
       )
         .default(DEFAULT.iterativeBuild)
         .hideHelp(),

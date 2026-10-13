@@ -27,12 +27,11 @@ function createElement(tagName = "div") {
 }
 
 function loadEventHelpers({
-  userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-  platform = "Win32",
+  userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+  platform = "MacIntel",
   disabledWebShortcuts = false,
   initialFullscreen = false,
   hideTitleBar = false,
-  hideWindowDecorations = false,
 } = {}) {
   const source = ["link_policy.js", "event.js"]
     .map((file) =>
@@ -107,7 +106,6 @@ function loadEventHelpers({
       pakeConfig: {
         disabled_web_shortcuts: disabledWebShortcuts,
         hide_title_bar: hideTitleBar,
-        hide_window_decorations: hideWindowDecorations,
       },
       __TAURI__: {
         core: {
@@ -165,12 +163,6 @@ function loadEventHelpers({
   };
 }
 
-function getFullscreenShortcutHandler(context) {
-  return context.eventListeners.keydown.find(
-    ({ handler }) => handler.name === "handleWindowFullscreenShortcut",
-  ).handler;
-}
-
 function getWebShortcutHandler(context) {
   return context.eventListeners.keyup.find(
     ({ handler }) => handler.name === "handleWebShortcut",
@@ -204,11 +196,7 @@ describe("event fullscreen shortcuts", () => {
   });
 
   it("leaves macOS reload shortcuts to the native menu", () => {
-    const context = loadEventHelpers({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
-      platform: "MacIntel",
-    });
+    const context = loadEventHelpers();
     const event = createKeyEvent("r", { metaKey: true });
 
     getWebShortcutHandler(context)(event);
@@ -217,23 +205,18 @@ describe("event fullscreen shortcuts", () => {
     expect(event.preventDefault).not.toHaveBeenCalled();
   });
 
-  it("keeps Ctrl+R web shortcuts on Windows and Linux", () => {
+  it("does not hijack Ctrl+R in the webview", () => {
     const context = loadEventHelpers();
     const event = createKeyEvent("r", { ctrlKey: true });
 
     getWebShortcutHandler(context)(event);
 
-    // Native webview_navigate so blank error pages still reload.
-    expect(context.navigateCalls).toEqual(["reload"]);
-    expect(event.preventDefault).toHaveBeenCalled();
+    expect(context.navigateCalls).toEqual([]);
+    expect(event.preventDefault).not.toHaveBeenCalled();
   });
 
   it("keeps macOS scroll-to-edge shortcuts in the webview", () => {
-    const context = loadEventHelpers({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
-      platform: "MacIntel",
-    });
+    const context = loadEventHelpers();
     const event = createKeyEvent("ArrowUp", { metaKey: true });
 
     getWebShortcutHandler(context)(event);
@@ -241,138 +224,26 @@ describe("event fullscreen shortcuts", () => {
     expect(event.preventDefault).toHaveBeenCalled();
   });
 
-  it("toggles native fullscreen on F11 for Windows", async () => {
+  it("registers no F11 or Ctrl-clipboard handlers (Windows/Linux only upstream)", () => {
     const context = loadEventHelpers();
-    const handler = getFullscreenShortcutHandler(context);
-    const event = createKeyEvent("F11");
+    const names = [
+      ...(context.eventListeners.keydown || []),
+      ...(context.eventListeners.keyup || []),
+    ].map(({ handler }) => handler.name);
 
-    handler(event);
-
-    expect(event.preventDefault).toHaveBeenCalled();
-    expect(event.stopImmediatePropagation).toHaveBeenCalled();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([true]);
+    expect(names).not.toContain("handleWindowFullscreenShortcut");
+    expect(names).not.toContain("handleClipboardShortcut");
+    expect(names).not.toContain("handleClipboardPasteFallback");
   });
 
-  it("exits native fullscreen on F11 when already fullscreen", async () => {
-    const context = loadEventHelpers({ initialFullscreen: true });
-    const handler = getFullscreenShortcutHandler(context);
-    const event = createKeyEvent("F11");
-
-    handler(event);
-
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([false]);
-  });
-
-  it("exits DOM fullscreen before leaving a fullscreen video on F11", async () => {
-    const context = loadEventHelpers({ initialFullscreen: true });
-    context.document.fullscreenElement = context.document.body;
-    context.document.exitFullscreen = vi.fn().mockResolvedValue(undefined);
-    getFullscreenShortcutHandler(context)(createKeyEvent("F11"));
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(context.document.exitFullscreen).toHaveBeenCalledOnce();
-    expect(context.fullscreenCalls).toEqual([]);
-  });
-
-  it("toggles native fullscreen on F11 for Linux", async () => {
-    const context = loadEventHelpers({
-      userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
-      platform: "Linux x86_64",
-    });
-    const handler = getFullscreenShortcutHandler(context);
-    const event = createKeyEvent("F11");
-
-    handler(event);
-
-    expect(event.preventDefault).toHaveBeenCalled();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([true]);
-  });
-
-  it("does not register fullscreen shortcuts when web shortcuts are disabled", () => {
-    const context = loadEventHelpers({ disabledWebShortcuts: true });
-
+  it("creates the drag region only when hide_title_bar is set", () => {
     expect(
-      context.eventListeners.keydown?.find(
-        ({ handler }) => handler.name === "handleWindowFullscreenShortcut",
+      loadEventHelpers().document.getElementById("pake-top-dom"),
+    ).toBeNull();
+    expect(
+      loadEventHelpers({ hideTitleBar: true }).document.getElementById(
+        "pake-top-dom",
       ),
-    ).toBeUndefined();
-  });
-
-  it("does not handle F11 on macOS", async () => {
-    const context = loadEventHelpers({
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
-      platform: "MacIntel",
-    });
-    const handler = getFullscreenShortcutHandler(context);
-    const event = createKeyEvent("F11");
-
-    handler(event);
-
-    expect(event.preventDefault).not.toHaveBeenCalled();
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([]);
-  });
-
-  it("does not claim Alt+Enter from hosted web apps", async () => {
-    const context = loadEventHelpers();
-    const handler = getFullscreenShortcutHandler(context);
-    const event = createKeyEvent("Enter", { altKey: true });
-
-    handler(event);
-
-    expect(event.preventDefault).not.toHaveBeenCalled();
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([]);
-  });
-
-  it("ignores synthetic and repeated F11 events", async () => {
-    const context = loadEventHelpers();
-    const handler = getFullscreenShortcutHandler(context);
-
-    handler(createKeyEvent("F11", { isTrusted: false }));
-    handler(createKeyEvent("F11", { repeat: true }));
-
-    await Promise.resolve();
-    expect(context.fullscreenCalls).toEqual([]);
-  });
-
-  it("creates the drag region only for the active platform flag", () => {
-    const windowsWithMacFlag = loadEventHelpers({ hideTitleBar: true });
-    const windowsWithDecorationsFlag = loadEventHelpers({
-      userAgent: "CustomBrowser/1.0",
-      platform: "Win32",
-      hideWindowDecorations: true,
-    });
-    const macUserAgent =
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15";
-    const macWithDecorationsFlag = loadEventHelpers({
-      userAgent: macUserAgent,
-      platform: "MacIntel",
-      hideWindowDecorations: true,
-    });
-    const macWithTitleBarFlag = loadEventHelpers({
-      userAgent: macUserAgent,
-      platform: "MacIntel",
-      hideTitleBar: true,
-    });
-
-    expect(
-      windowsWithMacFlag.document.getElementById("pake-top-dom"),
-    ).toBeNull();
-    expect(
-      windowsWithDecorationsFlag.document.getElementById("pake-top-dom"),
-    ).not.toBeNull();
-    expect(
-      macWithDecorationsFlag.document.getElementById("pake-top-dom"),
-    ).toBeNull();
-    expect(
-      macWithTitleBarFlag.document.getElementById("pake-top-dom"),
     ).not.toBeNull();
   });
 });

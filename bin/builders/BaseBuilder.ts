@@ -4,19 +4,10 @@ import chalk from 'chalk';
 import prompts from 'prompts';
 
 import { PakeAppOptions } from '@/types';
-import {
-  checkRustInstalled,
-  ensureRustEnv,
-  hasWindowsGnuToolchain,
-  hasWindowsMsvcBuildTools,
-  installRust,
-} from '@/helpers/rust';
+import { checkRustInstalled, ensureRustEnv, installRust } from '@/helpers/rust';
 import { mergeConfig } from '@/helpers/merge';
 import tauriConfig from '@/helpers/tauriConfig';
-import {
-  generateIdentifierSafeName,
-  generateLinuxPackageName,
-} from '@/utils/name';
+import { generateIdentifierSafeName } from '@/utils/name';
 import { npmDirectory, packageDirectory } from '@/utils/dir';
 import { PakeError } from '@/utils/error';
 import { getSpinner } from '@/utils/info';
@@ -24,7 +15,6 @@ import { BuildArtifact, isInteractive } from '@/utils/output';
 import { shellExec, type ShellCommand } from '@/utils/shell';
 import { hasReadyTauriCli } from '@/utils/tauri-cli';
 import { CN_MIRROR_ENV, isCnMirrorEnabled } from '@/utils/mirror';
-import { IS_MAC, IS_WIN } from '@/utils/platform';
 import logger from '@/options/logger';
 import {
   configureCargoRegistry,
@@ -33,33 +23,7 @@ import {
   getBuildTimeout,
   getInstallCommand,
   getInstallTimeout,
-  getWindowsGnuBuildEnvironment,
 } from './env';
-// Appended to the error when a Linux AppImage build fails for good. linuxdeploy's
-// diagnostics stream to the terminal (stdio: 'inherit') and never reach
-// error.message, so we cannot name the exact cause. We only reach here after
-// NO_STRIP=1 has been applied and still failed, so strip is shown as ruled out.
-const APPIMAGE_BAR = '━'.repeat(56);
-const APPIMAGE_FAILURE_GUIDANCE =
-  `\n\n${APPIMAGE_BAR}\n` +
-  'Linux AppImage Build Failed\n' +
-  `${APPIMAGE_BAR}\n\n` +
-  'The AppImage bundler (linuxdeploy) failed. Common causes and fixes:\n\n' +
-  '  • Strip incompatibility (glibc 2.38+): NO_STRIP=1 was already applied and\n' +
-  '    the build still failed, so strip is likely not the cause.\n' +
-  '  • Missing gdk-pixbuf loaders (e.g. "cannot stat\n' +
-  "    '/usr/lib/gdk-pixbuf-2.0/...'\"): install them, then rebuild:\n" +
-  '      Arch:    sudo pacman -S gdk-pixbuf2 librsvg\n' +
-  '      Debian:  sudo apt install librsvg2-common gdk-pixbuf2.0-bin\n' +
-  '      Fedora:  sudo dnf install gdk-pixbuf2-modules librsvg2\n' +
-  '      then:    sudo gdk-pixbuf-query-loaders --update-cache\n' +
-  '      (Arch refreshes the cache automatically via a pacman hook)\n' +
-  '  • Running in Docker/container: AppImage needs /dev/fuse:\n' +
-  '      --privileged --device /dev/fuse --security-opt apparmor=unconfined\n\n' +
-  'Still stuck? Build a DEB instead: pake <url> --targets deb\n' +
-  'Detailed guide: https://github.com/tw93/Pake/blob/main/docs/faq.md\n' +
-  APPIMAGE_BAR;
-
 export default abstract class BaseBuilder {
   protected options: PakeAppOptions;
   private artifacts: BuildArtifact[] = [];
@@ -76,16 +40,6 @@ export default abstract class BaseBuilder {
   /** Architecture reported in the `--json` result. */
   getReportArch(): string {
     return this.options.multiArch ? 'universal' : process.arch;
-  }
-
-  // Drop a recorded artifact whose file was later removed (e.g. the
-  // temporary .deb consumed by zst repacking), so --json never lists a
-  // path that no longer exists.
-  protected removeArtifact(artifactPath: string): void {
-    const resolved = path.resolve(artifactPath);
-    this.artifacts = this.artifacts.filter(
-      (artifact) => artifact.path !== resolved,
-    );
   }
 
   protected async recordArtifact(
@@ -133,26 +87,7 @@ export default abstract class BaseBuilder {
     const tauriTargetPath = this.getCargoTargetDir();
     const tauriTargetPathExists = await fsExtra.pathExists(tauriTargetPath);
 
-    if (!IS_MAC && !tauriTargetPathExists) {
-      logger.warn('✼ The first use requires installing system dependencies.');
-      logger.warn('✼ See more in https://tauri.app/start/prerequisites/.');
-    }
-
     ensureRustEnv();
-
-    if (
-      IS_WIN &&
-      this.options.windowsToolchain !== 'gnu' &&
-      !hasWindowsMsvcBuildTools() &&
-      hasWindowsGnuToolchain()
-    ) {
-      logger.warn(
-        '✼ No Visual Studio Build Tools detected, but a MinGW/GNU toolchain (gcc) is available.',
-      );
-      logger.warn(
-        '✼ If the build fails to link, retry with --windows-toolchain gnu.',
-      );
-    }
 
     if (!checkRustInstalled()) {
       if (!isInteractive()) {
@@ -205,9 +140,7 @@ export default abstract class BaseBuilder {
     // Show helpful message for first-time users
     if (!tauriTargetPathExists) {
       logger.info(
-        process.platform === 'win32'
-          ? '✺ First-time setup may take 10-15 minutes on Windows (compiling dependencies)...'
-          : '✺ First-time setup may take 5-10 minutes (installing dependencies)...',
+        '✺ First-time setup may take 5-10 minutes (installing dependencies)...',
       );
     }
 
@@ -287,76 +220,11 @@ export default abstract class BaseBuilder {
     logger.info('✸ Building app...');
 
     const baseEnv = getBuildEnvironment();
-    const isWindowsGnuBuild =
-      process.platform === 'win32' && this.options.windowsToolchain === 'gnu';
-    let buildEnv: Record<string, string> = {
-      ...(baseEnv ?? {}),
-      ...(isWindowsGnuBuild ? getWindowsGnuBuildEnvironment() : {}),
-      ...(process.env.NO_STRIP ? { NO_STRIP: process.env.NO_STRIP } : {}),
-    };
-
-    const resolveExecEnv = () =>
-      Object.keys(buildEnv).length > 0 ? buildEnv : undefined;
-
-    const isLinuxAppImage =
-      process.platform === 'linux' && target === 'appimage';
-
-    // AppImage builds can fail at the linuxdeploy strip step on glibc 2.38+.
-    // A real failure now prints full guidance, so only hint in debug mode.
-    if (isLinuxAppImage && !buildEnv.NO_STRIP && this.options.debug) {
-      logger.warn(
-        '⚠ AppImage strip step can fail on glibc 2.38+; Pake will auto-retry with NO_STRIP=1.',
-      );
-    }
-
-    const buildTimeout = getBuildTimeout();
-
-    try {
-      await shellExec(buildCommand, buildTimeout, resolveExecEnv());
-    } catch (error) {
-      if (!isLinuxAppImage) {
-        throw error;
-      }
-
-      // linuxdeploy's diagnostics stream to the terminal (stdio: 'inherit') and
-      // never reach error.message, so we cannot classify the cause. strip is the
-      // most common AppImage failure, so retry once with NO_STRIP=1; if that
-      // (or an already-NO_STRIP run) still fails, surface all known causes.
-      if (buildEnv.NO_STRIP) {
-        (error as Error).message += APPIMAGE_FAILURE_GUIDANCE;
-        throw error;
-      }
-
-      logger.warn(
-        '⚠ AppImage build failed, retrying once with NO_STRIP=1 (common glibc 2.38+ strip issue).',
-      );
-      buildEnv = { ...buildEnv, NO_STRIP: '1' };
-      try {
-        await shellExec(buildCommand, buildTimeout, resolveExecEnv());
-      } catch (retryError) {
-        (retryError as Error).message += APPIMAGE_FAILURE_GUIDANCE;
-        throw retryError;
-      }
-    }
+    await shellExec(buildCommand, getBuildTimeout(), baseEnv);
   }
 
   protected async copyBuildArtifacts(target: string, logSuccess = true) {
     const { name = 'pake-app' } = this.options;
-    // With --no-bundle there is no installer to copy; surface the raw
-    // executable the build produced instead.
-    if (this.options.bundle === false) {
-      await this.copyRawBinary(npmDirectory, name);
-      await this.recordArtifact(this.getRawBinaryPath(name), 'binary');
-      if (logSuccess) {
-        logger.success('✔ Build success!');
-        logger.success(
-          '✔ Raw binary located in',
-          path.resolve(this.getRawBinaryPath(name)),
-        );
-      }
-      return;
-    }
-
     // Copy app
     const fileName = this.getFileName();
     const fileType = this.getFileType(target);
@@ -383,7 +251,7 @@ export default abstract class BaseBuilder {
       logger.success('✔ Raw binary located in', path.resolve(binaryPath));
     }
 
-    if (IS_MAC && fileType === 'app' && this.options.install) {
+    if (fileType === 'app' && this.options.install) {
       await this.installAppToApplications(distPath, name);
     }
   }
@@ -439,14 +307,6 @@ export default abstract class BaseBuilder {
       arm64: 'aarch64-apple-darwin',
       x64: 'x86_64-apple-darwin',
       universal: 'universal-apple-darwin',
-    },
-    win32: {
-      arm64: 'aarch64-pc-windows-msvc',
-      x64: 'x86_64-pc-windows-msvc',
-    },
-    linux: {
-      arm64: 'aarch64-unknown-linux-gnu',
-      x64: 'x86_64-unknown-linux-gnu',
     },
   };
 
@@ -507,11 +367,8 @@ export default abstract class BaseBuilder {
     const features = ['cli-build'];
 
     // Add macos-proxy feature for modern macOS (Darwin 23+ = macOS 14+)
-    if (IS_MAC) {
-      const macOSVersion = this.getMacOSMajorVersion();
-      if (macOSVersion >= 23) {
-        features.push('macos-proxy');
-      }
+    if (this.getMacOSMajorVersion() >= 23) {
+      features.push('macos-proxy');
     }
 
     return features;
@@ -529,7 +386,7 @@ export default abstract class BaseBuilder {
     const fullCommand = this.buildBaseCommand(packageManager, configPath);
 
     // For macOS, use app bundles by default unless DMG is explicitly requested
-    if (IS_MAC && this.options.targets === 'app') {
+    if (this.options.targets === 'app') {
       fullCommand.args.push('--bundles', 'app');
     }
 
@@ -589,10 +446,7 @@ export default abstract class BaseBuilder {
 
     if (await fsExtra.pathExists(binaryPath)) {
       await fsExtra.copy(binaryPath, outputPath);
-      // Make binary executable on Unix-like systems
-      if (process.platform !== 'win32') {
-        await fsExtra.chmod(outputPath, 0o755);
-      }
+      await fsExtra.chmod(outputPath, 0o755);
     } else {
       logger.warn(`✼ Raw binary not found at ${binaryPath}, skipping...`);
     }
@@ -628,23 +482,14 @@ export default abstract class BaseBuilder {
    * Get the output path for the raw binary file
    */
   protected getRawBinaryPath(appName: string): string {
-    const extension = process.platform === 'win32' ? '.exe' : '';
-    const suffix = process.platform === 'win32' ? '' : '-binary';
-    return `${appName}${suffix}${extension}`;
+    return `${appName}-binary`;
   }
 
   /**
    * Get the binary name based on app name and platform
    */
   protected getBinaryName(appName: string): string {
-    const extension = process.platform === 'win32' ? '.exe' : '';
-
-    // Use unique binary name for all platforms to avoid conflicts
-    const nameToUse =
-      process.platform === 'linux'
-        ? generateLinuxPackageName(appName)
-        : generateIdentifierSafeName(appName);
-    return `pake-${nameToUse}${extension}`;
+    return `pake-${generateIdentifierSafeName(appName)}`;
   }
 
   /**

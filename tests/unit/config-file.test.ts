@@ -116,12 +116,13 @@ describe('loadConfigFile', () => {
     });
   });
 
-  it.each([false, true])(
-    'loads passwordAutosave=%s from config',
-    async (enabled) => {
-      const configPath = await writeConfig({ passwordAutosave: enabled });
-      const loaded = await loadConfigFile(configPath, validKeys);
-      expect(loaded.options.passwordAutosave).toBe(enabled);
+  it.each(['passwordAutosave', 'windowsToolchain', 'installerLanguage'])(
+    'rejects the removed Windows-only field %s as unknown',
+    async (field) => {
+      const configPath = await writeConfig({ [field]: true }, `${field}.json`);
+      await expect(loadConfigFile(configPath, validKeys)).rejects.toThrow(
+        new RegExp(`Unknown config field "${field}"`),
+      );
     },
   );
 
@@ -137,39 +138,6 @@ describe('loadConfigFile', () => {
     await expect(loadConfigFile(configPath, validKeys)).rejects.toMatchObject({
       code: 'INVALID_INPUT',
     });
-  });
-
-  it('rejects a windowsToolchain value the CLI flag would reject', async () => {
-    // --windows-toolchain is a .choices() flag; without a matching check here a
-    // typo would load fine and silently fall back to the msvc default.
-    const configPath = await writeConfig(
-      { windowsToolchain: 'clang' },
-      'toolchain-typo.json',
-    );
-    await expect(loadConfigFile(configPath, validKeys)).rejects.toThrow(
-      /must be one of: msvc, gnu/,
-    );
-  });
-
-  it('rejects a non-string windowsToolchain', async () => {
-    const configPath = await writeConfig(
-      { windowsToolchain: 123 },
-      'toolchain-number.json',
-    );
-    await expect(loadConfigFile(configPath, validKeys)).rejects.toMatchObject({
-      code: 'INVALID_INPUT',
-    });
-  });
-
-  it('keeps both valid windowsToolchain values', async () => {
-    for (const value of ['msvc', 'gnu']) {
-      const configPath = await writeConfig(
-        { windowsToolchain: value },
-        `toolchain-${value}.json`,
-      );
-      const loaded = await loadConfigFile(configPath, validKeys);
-      expect(loaded.options.windowsToolchain).toBe(value);
-    }
   });
 
   it('rejects unknown fields naming the field', async () => {

@@ -1,26 +1,15 @@
 import BaseBuilder from './BaseBuilder';
 import MacBuilder from './MacBuilder';
-import WinBuilder from './WinBuilder';
-import LinuxBuilder from './LinuxBuilder';
 import { PakeAppOptions } from '@/types';
 
-const { platform } = process;
-
-const buildersMap: Record<
-  string,
-  new (options: PakeAppOptions) => BaseBuilder
-> = {
-  darwin: MacBuilder,
-  win32: WinBuilder,
-  linux: LinuxBuilder,
-};
-
+// This fork only builds macOS apps, so there is nothing to choose between:
+// the provider just refuses to run anywhere else. (Upstream picks among
+// MacBuilder, WinBuilder and LinuxBuilder by process.platform.)
 export default class BuilderProvider {
   static create(options: PakeAppOptions): BaseBuilder {
-    const Builder = buildersMap[platform];
-    if (!Builder) {
-      throw new Error('The current system is not supported!');
+    if (process.platform !== 'darwin') {
+      throw new Error('This fork only supports building on macOS.');
     }
-    return new Builder(options);
+    return new MacBuilder(options);
   }
 }

@@ -1,5 +1,4 @@
 import { PakeCliOptions } from './types.js';
-import { getDefaultLinuxTargets } from './utils/platform.js';
 
 export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   icon: '',
@@ -9,7 +8,6 @@ export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   maximize: false,
   resizable: true,
   hideTitleBar: false,
-  hideWindowDecorations: false,
   alwaysOnTop: false,
   appVersion: '1.0.0',
   darkMode: false,
@@ -18,18 +16,7 @@ export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   userAgent: '',
   showSystemTray: false,
   multiArch: false,
-  targets: (() => {
-    switch (process.platform) {
-      case 'linux':
-        return getDefaultLinuxTargets();
-      case 'darwin':
-        return 'dmg';
-      case 'win32':
-        return 'msi';
-      default:
-        return 'deb';
-    }
-  })(),
+  targets: 'dmg',
   useLocalFile: false,
   systemTrayIcon: '',
   proxyUrl: '',
@@ -38,14 +25,11 @@ export const DEFAULT_PAKE_OPTIONS: PakeCliOptions = {
   debug: false,
   json: false,
   inject: [],
-  installerLanguage: 'en-US',
-  hideOnClose: undefined, // Platform-specific: true for macOS, false for others
+  hideOnClose: undefined, // merge.ts falls back to true
   incognito: false,
   restoreLastUrl: true,
-  passwordAutosave: false,
   wasm: false,
   enableDragDrop: false,
-  bundle: true,
   keepBinary: false,
   multiInstance: false,
   multiWindow: false,

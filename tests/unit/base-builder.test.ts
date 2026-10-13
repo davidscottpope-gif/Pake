@@ -15,7 +15,7 @@ vi.mock('@/utils/dir', () => ({
 }));
 
 import BaseBuilder from '@/builders/BaseBuilder';
-import WinBuilder from '@/builders/WinBuilder';
+import MacBuilder from '@/builders/MacBuilder';
 import {
   _resetPackageManagerCache,
   configureCargoRegistry,
@@ -113,12 +113,7 @@ describe('BaseBuilder guards', () => {
     try {
       const env = getBuildEnvironment();
 
-      if (process.platform === 'darwin') {
-        expect(env).toBeDefined();
-        expect(env!.PATH.startsWith('/usr/bin:')).toBe(true);
-      } else {
-        expect(env).toBeUndefined();
-      }
+      expect(env.PATH.startsWith('/usr/bin:')).toBe(true);
     } finally {
       process.env.PATH = originalPath;
     }
@@ -344,20 +339,20 @@ describe('BaseBuilder guards', () => {
     },
   );
 
-  it('copies Windows build artifacts from CARGO_TARGET_DIR when it is set', () => {
+  it('copies macOS build artifacts from CARGO_TARGET_DIR when it is set', () => {
     const cargoTargetDir = path.join(process.cwd(), '.short-cargo-target');
     process.env.CARGO_TARGET_DIR = cargoTargetDir;
 
-    const builder = new WinBuilder({
+    const builder = new MacBuilder({
       debug: false,
       name: 'ChatGPT',
-      targets: 'x64',
+      targets: 'apple',
     } as any);
 
     const appPath = (builder as any).getBuildAppPath(
       process.cwd(),
-      'ChatGPT_1.0.0_x64_en-US',
-      'msi',
+      'ChatGPT_1.0.0_aarch64',
+      'dmg',
     );
     const binaryPath = (builder as any).getRawBinarySourcePath(
       process.cwd(),
@@ -367,19 +362,19 @@ describe('BaseBuilder guards', () => {
     expect(appPath).toBe(
       path.join(
         cargoTargetDir,
-        'x86_64-pc-windows-msvc',
+        'aarch64-apple-darwin',
         'release',
         'bundle',
-        'msi',
-        'ChatGPT_1.0.0_x64_en-US.msi',
+        'dmg',
+        'ChatGPT_1.0.0_aarch64.dmg',
       ),
     );
     expect(binaryPath).toBe(
       path.join(
         cargoTargetDir,
-        'x86_64-pc-windows-msvc',
+        'aarch64-apple-darwin',
         'release',
-        'pake-chatgpt.exe',
+        'pake-chatgpt',
       ),
     );
   });

@@ -35,10 +35,10 @@ const shortcuts = {
 };
 
 function setZoom(zoom) {
-  // Use native WebView zoom (WKWebView pageZoom / WebView2 ZoomFactor) instead of
-  // CSS hacks. `transform: scale` and `html.style.zoom` break complex SPAs like
-  // ChatGPT: the page shifts right on Windows and parts of the UI stop repainting
-  // on macOS. Native zoom recalculates layout exactly like a browser does.
+  // Use native WebView zoom (WKWebView pageZoom) instead of CSS hacks.
+  // `transform: scale` and `html.style.zoom` break complex SPAs like ChatGPT:
+  // parts of the UI stop repainting. Native zoom recalculates layout exactly
+  // like a browser does.
   const zoomPercent = normalizeZoomPercent(zoom);
   const normalizedZoom = `${zoomPercent}%`;
   const invoke = window.__TAURI__?.core?.invoke;
@@ -85,15 +85,11 @@ function handleShortcut(event) {
 }
 
 function handleWebShortcut(event) {
-  if (isNonMacDesktop() && event.ctrlKey) {
-    handleShortcut(event);
-    return;
-  }
-
-  const isMac = /mac/i.test(getDesktopPlatform());
-  const isMacScrollShortcut =
-    event.key === "ArrowUp" || event.key === "ArrowDown";
-  if (isMac && event.metaKey && isMacScrollShortcut) {
+  // Cmd+Up / Cmd+Down scroll to the top / bottom of the page. (Upstream also
+  // handled Ctrl+R, Ctrl+[ and friends here for Windows and Linux; macOS gets
+  // those from the native menu.)
+  const isScrollKey = event.key === "ArrowUp" || event.key === "ArrowDown";
+  if (event.metaKey && isScrollKey) {
     handleShortcut(event);
   }
 }
@@ -112,243 +108,11 @@ function toggleNativeFullscreen(appWindow) {
     });
 }
 
-function handleWindowFullscreenShortcut(event) {
-  if (
-    !event.isTrusted ||
-    event.repeat ||
-    event.key !== "F11" ||
-    !isNonMacDesktop()
-  ) {
-    return;
-  }
-
-  const appWindow = window.__TAURI__?.window?.getCurrentWindow?.();
-  if (!appWindow) {
-    return;
-  }
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  toggleNativeFullscreen(appWindow);
-}
-
-function getDesktopPlatform() {
-  return (
-    navigator.userAgentData?.platform ||
-    navigator.platform ||
-    navigator.userAgent
-  );
-}
-
-function isNonMacDesktop() {
-  return /win|linux/i.test(getDesktopPlatform());
-}
-
 function hasImmersiveHeader(config = window["pakeConfig"] || {}) {
-  return /mac/i.test(getDesktopPlatform())
-    ? config.hide_title_bar === true
-    : config.hide_window_decorations === true;
-}
-
-function isEditableElement(element) {
-  if (!element) return false;
-
-  const tagName = element.tagName;
-  return (
-    tagName === "INPUT" || tagName === "TEXTAREA" || element.isContentEditable
-  );
-}
-
-function hasSelectedText() {
-  return Boolean(window.getSelection?.()?.toString());
-}
-
-const NON_TEXT_INPUT_TYPES = new Set([
-  "button",
-  "checkbox",
-  "color",
-  "file",
-  "hidden",
-  "image",
-  "radio",
-  "range",
-  "reset",
-  "submit",
-]);
-
-function isTextInputElement(element) {
-  return (
-    element?.tagName === "INPUT" &&
-    !NON_TEXT_INPUT_TYPES.has((element.type || "text").toLowerCase())
-  );
-}
-
-function selectEditableElement(element) {
-  if (typeof element.select === "function") {
-    element.select();
-    return true;
-  }
-
-  if (element.isContentEditable) {
-    const range = document.createRange();
-    range.selectNodeContents(element);
-    const selection = window.getSelection?.();
-    if (!selection) return false;
-
-    selection.removeAllRanges();
-    selection.addRange(range);
-    return true;
-  }
-
-  return false;
-}
-
-function canPasteIntoEditableElement(element) {
-  if (!isEditableElement(element)) return false;
-
-  if (element.tagName === "INPUT") {
-    return (
-      isTextInputElement(element) &&
-      element.disabled !== true &&
-      element.readOnly !== true
-    );
-  }
-
-  if (element.tagName === "TEXTAREA") {
-    return element.disabled !== true && element.readOnly !== true;
-  }
-
-  return true;
-}
-
-function insertTextIntoEditableElement(element, text) {
-  if (!text) return false;
-
-  if (document.execCommand("insertText", false, text)) {
-    return true;
-  }
-
-  if (
-    element &&
-    (isTextInputElement(element) || element.tagName === "TEXTAREA") &&
-    typeof element.setRangeText === "function"
-  ) {
-    const valueLength =
-      typeof element.value === "string" ? element.value.length : 0;
-    const start =
-      typeof element.selectionStart === "number"
-        ? element.selectionStart
-        : valueLength;
-    const end =
-      typeof element.selectionEnd === "number" ? element.selectionEnd : start;
-    element.setRangeText(text, start, end, "end");
-    element.dispatchEvent?.(new Event("input", { bubbles: true }));
-    return true;
-  }
-
-  return false;
-}
-
-let clipboardPasteFallbackTarget;
-let clipboardPasteFallbackArmedAt = 0;
-// An armed fallback older than this is a leftover from a keyup the window
-// never saw (alt-tab mid-press); firing it on a later plain "v" keyup would
-// paste unexpectedly.
-const CLIPBOARD_PASTE_FALLBACK_TTL_MS = 5000;
-
-function pasteClipboardText(activeElement) {
-  const readText = navigator.clipboard?.readText;
-  if (typeof readText !== "function") {
-    return;
-  }
-
-  readText
-    .call(navigator.clipboard)
-    .then((text) => {
-      insertTextIntoEditableElement(activeElement, text);
-    })
-    .catch(() => {});
-}
-
-function handleClipboardShortcut(event) {
-  if (
-    event.isTrusted !== true ||
-    !isNonMacDesktop() ||
-    !event.ctrlKey ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey
-  ) {
-    return false;
-  }
-
-  const key = event.key?.toLowerCase();
-  const activeElement = document.activeElement;
-  const isEditable = isEditableElement(activeElement);
-
-  if (key === "c" && (isEditable || hasSelectedText())) {
-    document.execCommand("copy");
-    event.preventDefault();
-    return true;
-  }
-
-  if (key === "x" && isEditable) {
-    document.execCommand("cut");
-    event.preventDefault();
-    return true;
-  }
-
-  if (key === "v" && canPasteIntoEditableElement(activeElement)) {
-    // Let the native WebView paste event run first so images, files, and rich
-    // clipboard formats remain intact. If the platform does not emit paste,
-    // keyup applies the existing text-only fallback. Key-repeat must not
-    // re-arm: after a native paste already fired and disarmed the fallback,
-    // a repeat keydown re-arming it would make keyup paste text a second
-    // time. Repeats only refresh the TTL of a still-armed target.
-    if (!event.repeat) {
-      clipboardPasteFallbackTarget = activeElement;
-      clipboardPasteFallbackArmedAt = Date.now();
-    } else if (clipboardPasteFallbackTarget === activeElement) {
-      clipboardPasteFallbackArmedAt = Date.now();
-    }
-    return false;
-  }
-
-  if (key === "a" && isEditable && selectEditableElement(activeElement)) {
-    event.preventDefault();
-    return true;
-  }
-
-  return false;
-}
-
-function handleClipboardPasteFallback(event) {
-  if (
-    event.isTrusted !== true ||
-    !isNonMacDesktop() ||
-    event.key?.toLowerCase() !== "v"
-  ) {
-    return false;
-  }
-
-  const activeElement = clipboardPasteFallbackTarget;
-  const armedAt = clipboardPasteFallbackArmedAt;
-  clipboardPasteFallbackTarget = undefined;
-  if (
-    !activeElement ||
-    Date.now() - armedAt > CLIPBOARD_PASTE_FALLBACK_TTL_MS ||
-    document.activeElement !== activeElement ||
-    !canPasteIntoEditableElement(activeElement)
-  ) {
-    return false;
-  }
-
-  pasteClipboardText(activeElement);
-  return true;
+  return config.hide_title_bar === true;
 }
 
 function handlePaste(event) {
-  clipboardPasteFallbackTarget = undefined;
   if (!pasteAsPlainTextPending) return;
 
   event.preventDefault();
@@ -549,13 +313,6 @@ function shouldBypassPakeLinkHandling(rawHref) {
   );
 }
 
-function shouldNavigateAuthInCurrentWindow() {
-  // WKWebView can abort on auth popups, while WebKitGTK may return a truthy
-  // proxy even when the native side denies the window. Keep those platforms
-  // in-place without changing the working WebView2 popup path on Windows.
-  return /mac|linux/i.test(getDesktopPlatform());
-}
-
 function canNavigateAuthUrl(url) {
   const normalizedUrl = normalizeAnchorHref(url).toLowerCase();
   return normalizedUrl !== "" && normalizedUrl !== "about:blank";
@@ -589,7 +346,8 @@ function openAuthNavigation(originalWindowOpen, url, name, specs) {
     }
   }
 
-  if (shouldNavigateAuthInCurrentWindow() && canNavigateAuthUrl(url)) {
+  // WKWebView can abort on auth popups, so navigate in place instead.
+  if (canNavigateAuthUrl(url)) {
     return navigateInCurrentWindow(url);
   }
 
@@ -677,12 +435,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (window["pakeConfig"]?.disabled_web_shortcuts !== true) {
-    document.addEventListener("keydown", handleWindowFullscreenShortcut, true);
     document.addEventListener("keyup", handleWebShortcut);
   }
 
-  document.addEventListener("keydown", handleClipboardShortcut, true);
-  document.addEventListener("keyup", handleClipboardPasteFallback, true);
   document.addEventListener("paste", handlePaste, true);
 
   // Trigger a native browser download via a transient anchor click. The Rust

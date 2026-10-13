@@ -8,27 +8,13 @@ import { execa } from 'execa';
 import logger from './logger';
 import { getSpinner } from '@/utils/info';
 import { npmDirectory } from '@/utils/dir';
-import { IS_LINUX, IS_WIN } from '@/utils/platform';
 import {
   generateDashboardIconSlugs,
   getIconSourcePriority,
   type IconSource,
 } from '@/utils/icon-source';
-import { generateLinuxPackageName, getSafeAppName } from '@/utils/name';
+import { getSafeAppName } from '@/utils/name';
 import { PakeAppOptions } from '@/types';
-import {
-  ensureMultiResolutionIco,
-  writeIcoWithPreferredSize,
-  buildIcoFromPngBuffers,
-  WIN_STANDARD_ICO_SIZES,
-} from '@/utils/ico';
-
-type PlatformIconConfig = {
-  format: string;
-  sizes?: number[];
-  size?: number;
-};
-
 type Sharp = (typeof import('sharp'))['default'];
 
 async function loadSharp(): Promise<Sharp> {
@@ -53,11 +39,7 @@ const ICON_CONFIG = {
   },
 } as const;
 
-const PLATFORM_CONFIG: Record<'win' | 'linux' | 'macos', PlatformIconConfig> = {
-  win: { format: '.ico', sizes: [...WIN_STANDARD_ICO_SIZES] },
-  linux: { format: '.png', size: 512 },
-  macos: { format: '.icns' },
-};
+const MACOS_ICON_FORMAT = '.icns';
 
 const MACOS_ICONSET_FILES = [
   ['icon_16x16.png', 16],
@@ -80,64 +62,19 @@ const API_KEYS = {
 type SupportedIconFormat = (typeof ICON_CONFIG.supportedFormats)[number];
 
 /**
- * Generates platform-specific icon paths and handles copying for Windows
+ * Where a generated icon for this app is stored inside src-tauri/icons.
  */
-function generateIconPath(appName: string, isDefault = false): string {
-  const safeName = isDefault ? 'icon' : getIconBaseName(appName);
-  const baseName = safeName;
-
-  if (IS_WIN) {
-    return path.join(npmDirectory, 'src-tauri', 'png', `${baseName}_256.ico`);
-  }
-  if (IS_LINUX) {
-    return path.join(npmDirectory, 'src-tauri', 'png', `${baseName}_512.png`);
-  }
-  return path.join(npmDirectory, 'src-tauri', 'icons', `${baseName}.icns`);
+function generateIconPath(appName: string): string {
+  return path.join(
+    npmDirectory,
+    'src-tauri',
+    'icons',
+    `${getIconBaseName(appName)}.icns`,
+  );
 }
 
 function getIconBaseName(appName: string): string {
-  const baseName = IS_LINUX
-    ? generateLinuxPackageName(appName)
-    : getSafeAppName(appName);
-  return baseName || 'pake-app';
-}
-
-async function copyWindowsIconIfNeeded(
-  convertedPath: string,
-  appName: string,
-): Promise<string> {
-  if (!IS_WIN || !convertedPath.endsWith('.ico')) {
-    return convertedPath;
-  }
-
-  try {
-    const finalIconPath = generateIconPath(appName);
-    await fsExtra.ensureDir(path.dirname(finalIconPath));
-    // Re-render ICO so every Windows standard size is present and prefer the
-    // 256px frame as the leading entry; falls back to plain reordering if the
-    // ICO is non-decodable, then to a raw copy. (Issue #1190)
-    const upgraded = await ensureMultiResolutionIco(
-      convertedPath,
-      finalIconPath,
-      256,
-    );
-    if (!upgraded) {
-      const reordered = await writeIcoWithPreferredSize(
-        convertedPath,
-        finalIconPath,
-        256,
-      );
-      if (!reordered) {
-        await fsExtra.copy(convertedPath, finalIconPath);
-      }
-    }
-    return finalIconPath;
-  } catch (error) {
-    logger.warn(
-      `Failed to copy Windows icon: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-    return convertedPath;
-  }
+  return getSafeAppName(appName) || 'pake-app';
 }
 
 /**
@@ -230,10 +167,7 @@ export async function generateMacOSIcns(
 ): Promise<string> {
   const sharp = await loadSharp();
   const iconsetPath = path.join(outputDir, `${iconName}.iconset`);
-  const outputPath = path.join(
-    outputDir,
-    `${iconName}${PLATFORM_CONFIG.macos.format}`,
-  );
+  const outputPath = path.join(outputDir, `${iconName}${MACOS_ICON_FORMAT}`);
   await fsExtra.ensureDir(iconsetPath);
 
   const source = sharp(inputPath);
@@ -278,53 +212,6 @@ async function convertIconFormat(
     const processedInputPath = await preprocessIcon(inputPath);
     const iconName = getIconBaseName(appName);
 
-    // Generate platform-specific format
-    if (IS_WIN) {
-      const sharp = await loadSharp();
-      const icoPath = path.join(
-        platformOutputDir,
-        `${iconName}_256${PLATFORM_CONFIG.win.format}`,
-      );
-      const sourceBuffer = await fsExtra.readFile(processedInputPath);
-      const frames = await Promise.all(
-        (PLATFORM_CONFIG.win.sizes as number[]).map(async (size) => {
-          const png = await sharp(sourceBuffer)
-            .resize(size, size, {
-              fit: 'contain',
-              background: { r: 0, g: 0, b: 0, alpha: 0 },
-            })
-            .ensureAlpha()
-            .png()
-            .toBuffer();
-          return { size, png };
-        }),
-      );
-      const icoBuffer = buildIcoFromPngBuffers(frames);
-      await fsExtra.outputFile(icoPath, icoBuffer);
-      return icoPath;
-    }
-
-    if (IS_LINUX) {
-      const sharp = await loadSharp();
-      const outputPath = path.join(
-        platformOutputDir,
-        `${iconName}_${PLATFORM_CONFIG.linux.size}${PLATFORM_CONFIG.linux.format}`,
-      );
-
-      // Ensure we convert to proper PNG format with correct size
-      await sharp(processedInputPath)
-        .resize(PLATFORM_CONFIG.linux.size, PLATFORM_CONFIG.linux.size, {
-          fit: 'contain',
-          background: ICON_CONFIG.transparentBackground,
-        })
-        .ensureAlpha()
-        .png()
-        .toFile(outputPath);
-
-      return outputPath;
-    }
-
-    // macOS
     const macIconPath = await applyMacOSMask(processedInputPath);
     const outputPath = await generateMacOSIcns(
       macIconPath,
@@ -340,23 +227,6 @@ async function convertIconFormat(
   }
 }
 
-async function isLinuxBundleIconReady(iconPath: string): Promise<boolean> {
-  if (!IS_LINUX || path.extname(iconPath).toLowerCase() !== '.png') {
-    return false;
-  }
-
-  try {
-    const sharp = await loadSharp();
-    const { width, height } = await sharp(iconPath).metadata();
-    return (
-      width === PLATFORM_CONFIG.linux.size &&
-      height === PLATFORM_CONFIG.linux.size
-    );
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Processes downloaded or local icon for platform-specific format
  */
@@ -366,74 +236,21 @@ async function processIcon(
 ): Promise<string | null> {
   if (!iconPath || !appName) return iconPath;
 
-  // Check if already in correct platform format
-  const ext = path.extname(iconPath).toLowerCase();
-  const isCorrectFormat =
-    (IS_WIN && ext === '.ico') ||
-    (IS_LINUX && (await isLinuxBundleIconReady(iconPath))) ||
-    (!IS_WIN && !IS_LINUX && ext === '.icns');
-
-  if (isCorrectFormat) {
-    return await copyWindowsIconIfNeeded(iconPath, appName);
+  // Already an .icns file: use it as is
+  if (path.extname(iconPath).toLowerCase() === '.icns') {
+    return iconPath;
   }
 
-  // Convert to platform format
   const convertedPath = await convertIconFormat(iconPath, appName);
-  if (convertedPath) {
-    return await copyWindowsIconIfNeeded(convertedPath, appName);
-  }
-
-  return iconPath;
+  return convertedPath ?? iconPath;
 }
 
 /**
- * Gets default icon with platform-specific fallback logic
+ * Gets the default macOS icon bundled with Pake
  */
 async function getDefaultIcon(): Promise<string> {
   logger.info('✼ No icon provided, using default icon.');
-
-  if (IS_WIN) {
-    const defaultIcoPath = generateIconPath('icon', true);
-    const defaultPngPath = path.join(
-      npmDirectory,
-      'src-tauri/png/icon_512.png',
-    );
-
-    // Try default ico first
-    if (await fsExtra.pathExists(defaultIcoPath)) {
-      return defaultIcoPath;
-    }
-
-    // Convert from png if ico doesn't exist
-    if (await fsExtra.pathExists(defaultPngPath)) {
-      logger.info('✼ Default ico not found, converting from png...');
-      try {
-        const convertedPath = await convertIconFormat(defaultPngPath, 'icon');
-        if (convertedPath && (await fsExtra.pathExists(convertedPath))) {
-          return await copyWindowsIconIfNeeded(convertedPath, 'icon');
-        }
-      } catch (error) {
-        logger.warn(
-          `Failed to convert default png to ico: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
-      }
-    }
-
-    // Fallback to png or empty
-    if (await fsExtra.pathExists(defaultPngPath)) {
-      logger.warn('✼ Using png as fallback for Windows (may cause issues).');
-      return defaultPngPath;
-    }
-
-    logger.warn('✼ No default icon found, will use pake default.');
-    return '';
-  }
-
-  // Linux and macOS defaults
-  const iconPath = IS_LINUX
-    ? 'src-tauri/png/icon_512.png'
-    : 'src-tauri/icons/icon.icns';
-  return path.join(npmDirectory, iconPath);
+  return path.join(npmDirectory, 'src-tauri/icons/icon.icns');
 }
 
 /**
@@ -579,12 +396,7 @@ async function resolveIconFromUrl(
     return null;
   }
 
-  const convertedPath = await convertIconFormat(iconPath, appName);
-  if (!convertedPath) {
-    return null;
-  }
-
-  return await copyWindowsIconIfNeeded(convertedPath, appName);
+  return await convertIconFormat(iconPath, appName);
 }
 
 async function tryResolveIconSource(

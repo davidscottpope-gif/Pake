@@ -12,47 +12,20 @@ function makeOptions(overrides: Partial<PakeAppOptions> = {}): PakeAppOptions {
 }
 
 describe('buildWindowConfigOverrides', () => {
-  it.each(['darwin', 'win32', 'linux'] as const)(
-    'disables URL restoration without enabling private mode on %s',
-    (platform) => {
-      expect(
-        buildWindowConfigOverrides(
-          makeOptions({ restoreLastUrl: false }),
-          platform,
-        ),
-      ).toMatchObject({ restore_last_url: false, incognito: false });
-    },
-  );
-  it.each([false, true])(
-    'forwards password autosave=%s to native config',
-    (enabled) => {
-      expect(
-        buildWindowConfigOverrides(
-          makeOptions({ passwordAutosave: enabled }),
-          'win32',
-        ).password_autosave,
-      ).toBe(enabled);
-    },
-  );
+  it('disables URL restoration without enabling private mode', () => {
+    expect(
+      buildWindowConfigOverrides(makeOptions({ restoreLastUrl: false })),
+    ).toMatchObject({ restore_last_url: false, incognito: false });
+  });
+
   it('matches the default snapshot on macOS', () => {
-    const result = buildWindowConfigOverrides(makeOptions(), 'darwin');
-    expect(result).toMatchSnapshot();
-  });
-
-  it('matches the default snapshot on Windows', () => {
-    const result = buildWindowConfigOverrides(makeOptions(), 'win32');
-    expect(result).toMatchSnapshot();
-  });
-
-  it('matches the default snapshot on Linux', () => {
-    const result = buildWindowConfigOverrides(makeOptions(), 'linux');
+    const result = buildWindowConfigOverrides(makeOptions());
     expect(result).toMatchSnapshot();
   });
 
   it('respects explicit hideOnClose=false on macOS', () => {
     const result = buildWindowConfigOverrides(
       makeOptions({ hideOnClose: false }),
-      'darwin',
     );
     expect(result.hide_on_close).toBe(false);
   });
@@ -60,79 +33,32 @@ describe('buildWindowConfigOverrides', () => {
   it('defaults hideOnClose to true on macOS when undefined', () => {
     const result = buildWindowConfigOverrides(
       makeOptions({ hideOnClose: undefined }),
-      'darwin',
     );
     expect(result.hide_on_close).toBe(true);
   });
 
-  it('defaults hideOnClose to false on Linux/Windows when undefined', () => {
+  it('forwards hideTitleBar', () => {
     expect(
-      buildWindowConfigOverrides(
-        makeOptions({ hideOnClose: undefined }),
-        'linux',
-      ).hide_on_close,
-    ).toBe(false);
-    expect(
-      buildWindowConfigOverrides(
-        makeOptions({ hideOnClose: undefined }),
-        'win32',
-      ).hide_on_close,
-    ).toBe(false);
+      buildWindowConfigOverrides({ ...makeOptions(), hideTitleBar: true })
+        .hide_title_bar,
+    ).toBe(true);
   });
 
-  it('only forwards hideTitleBar on macOS', () => {
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideTitleBar: true },
-        'darwin',
-      ).hide_title_bar,
-    ).toBe(true);
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideTitleBar: true },
-        'linux',
-      ).hide_title_bar,
-    ).toBe(false);
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideTitleBar: true },
-        'win32',
-      ).hide_title_bar,
-    ).toBe(false);
-  });
-
-  it('only forwards hideWindowDecorations on Windows and Linux', () => {
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideWindowDecorations: true },
-        'darwin',
-      ).hide_window_decorations,
-    ).toBe(false);
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideWindowDecorations: true },
-        'linux',
-      ).hide_window_decorations,
-    ).toBe(true);
-    expect(
-      buildWindowConfigOverrides(
-        { ...makeOptions(), hideWindowDecorations: true },
-        'win32',
-      ).hide_window_decorations,
-    ).toBe(true);
+  it('keeps the Windows/Linux-only config keys at fixed values', () => {
+    const result = buildWindowConfigOverrides(makeOptions());
+    expect(result.hide_window_decorations).toBe(false);
+    expect(result.password_autosave).toBe(false);
   });
 
   it('only enables start_to_tray when both flag and tray are on', () => {
     expect(
       buildWindowConfigOverrides(
         makeOptions({ startToTray: true, showSystemTray: false }),
-        'darwin',
       ).start_to_tray,
     ).toBe(false);
     expect(
       buildWindowConfigOverrides(
         makeOptions({ startToTray: true, showSystemTray: true }),
-        'darwin',
       ).start_to_tray,
     ).toBe(true);
   });
@@ -153,7 +79,6 @@ describe('buildWindowConfigOverrides', () => {
         forceInternalNavigation: true,
         internalUrlRegex: '^https://example\\.com',
       }),
-      'darwin',
     );
     expect(result).toMatchObject({
       width: 1400,

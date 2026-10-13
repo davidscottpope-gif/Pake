@@ -10,14 +10,6 @@ export function getSafeAppName(name: string): string {
   return generateSafeFilename(name).toLowerCase();
 }
 
-export function generateLinuxPackageName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .replace(/-+/g, '-');
-}
-
 export function generateIdentifierSafeName(name: string): string {
   const cleaned = name.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '').toLowerCase();
 

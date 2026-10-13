@@ -49,18 +49,11 @@ export function validateDownloadDirInput(value: string): string {
   if (value === '') return value;
   const homeRelative = value.startsWith('~/') ? value.slice(2) : null;
   const invalidHomePath =
-    homeRelative !== null &&
-    (path.isAbsolute(homeRelative) ||
-      (process.platform === 'win32' &&
-        /^(?:[a-zA-Z]:|[\\/])/.test(homeRelative)));
+    homeRelative !== null && path.isAbsolute(homeRelative);
   if (
     invalidHomePath ||
     value.includes('\0') ||
-    !(path.isAbsolute(value) || value === '~' || value.startsWith('~/')) ||
-    (process.platform === 'win32' &&
-      value !== '~' &&
-      !value.startsWith('~/') &&
-      !/^(?:[a-zA-Z]:[\\/]|[\\/]{2}[^\\/]+[\\/][^\\/]+)/.test(value))
+    !(path.isAbsolute(value) || value === '~' || value.startsWith('~/'))
   ) {
     throw new PakeError('Invalid download directory.', {
       code: 'INVALID_INPUT',

@@ -9,24 +9,16 @@ import {
   capitalizeFirstLetter,
   resolveIdentifier,
 } from '@/utils/info';
-import { generateLinuxPackageName } from '@/utils/name';
 import { PakeError } from '@/utils/error';
 import { isInteractive } from '@/utils/output';
 import { PakeAppOptions, PakeCliOptions } from '@/types';
 
-function resolveAppName(name: string, platform: NodeJS.Platform): string {
-  const domain = getDomain(name) || 'pake';
-  return platform !== 'linux' ? capitalizeFirstLetter(domain) : domain;
+function resolveAppName(name: string): string {
+  return capitalizeFirstLetter(getDomain(name) || 'pake');
 }
 
-export function resolveLocalAppName(
-  filePath: string,
-  platform: NodeJS.Platform,
-): string {
+export function resolveLocalAppName(filePath: string): string {
   const baseName = path.parse(filePath).name || 'pake-app';
-  if (platform === 'linux') {
-    return generateLinuxPackageName(baseName) || 'pake-app';
-  }
   const normalized = baseName
     .replace(/[^a-zA-Z0-9\u4e00-\u9fff .-]/g, '')
     .replace(/^[ .-]+/, '')
@@ -35,11 +27,8 @@ export function resolveLocalAppName(
   return normalized || 'pake-app';
 }
 
-export function isValidName(name: string, platform: NodeJS.Platform): boolean {
-  const reg =
-    platform === 'linux'
-      ? /^[a-z0-9\u4e00-\u9fff][a-z0-9\u4e00-\u9fff-]*$/
-      : /^[a-zA-Z0-9\u4e00-\u9fff][a-zA-Z0-9\u4e00-\u9fff .-]*$/;
+export function isValidName(name: string): boolean {
+  const reg = /^[a-zA-Z0-9\u4e00-\u9fff][a-zA-Z0-9\u4e00-\u9fff .-]*$/;
   return !!name && reg.test(name);
 }
 
@@ -47,15 +36,14 @@ export default async function handleOptions(
   options: PakeCliOptions,
   url: string,
 ): Promise<PakeAppOptions> {
-  const { platform } = process;
   const isActions = process.env.GITHUB_ACTIONS;
   let name = options.name;
 
   const pathExists = await fsExtra.pathExists(url);
   if (!options.name) {
     const defaultName = pathExists
-      ? resolveLocalAppName(url, platform)
-      : resolveAppName(url, platform);
+      ? resolveLocalAppName(url)
+      : resolveAppName(url);
     if (isInteractive()) {
       const promptMessage = 'Enter your application name';
       const namePrompt = await promptText(promptMessage, defaultName);
@@ -65,18 +53,11 @@ export default async function handleOptions(
     }
   }
 
-  if (name && platform === 'linux') {
-    name = generateLinuxPackageName(name);
-  }
-
-  if (name && !isValidName(name, platform)) {
-    const LINUX_NAME_ERROR = `✕ Name should only include lowercase letters, numbers, and dashes (not leading dashes). Examples: com-123-xxx, 123pan, pan123, weread, we-read, 123.`;
-    const DEFAULT_NAME_ERROR = `✕ Name should only include letters, numbers, dots, dashes, and spaces (not leading dots, dashes, and spaces). Examples: 123pan, 123Pan, Pan123, weread, WeRead, WERead, we-read, We Read, Vectorizer.AI, 123.`;
-    const errorMsg =
-      platform === 'linux' ? LINUX_NAME_ERROR : DEFAULT_NAME_ERROR;
+  if (name && !isValidName(name)) {
+    const errorMsg = `✕ Name should only include letters, numbers, dots, dashes, and spaces (not leading dots, dashes, and spaces). Examples: 123pan, 123Pan, Pan123, weread, WeRead, WERead, we-read, We Read, Vectorizer.AI, 123.`;
     if (isActions) {
       logger.error(errorMsg);
-      name = resolveAppName(url, platform);
+      name = resolveAppName(url);
       logger.warn(`✼ Inside github actions, use the default name: ${name}`);
     } else {
       throw new PakeError(errorMsg);
@@ -94,12 +75,6 @@ export default async function handleOptions(
   // --safe-domain is sugar over --internal-url-regex; an explicit regex wins.
   if (!options.internalUrlRegex && options.safeDomain) {
     appOptions.internalUrlRegex = safeDomainsToRegex(options.safeDomain);
-  }
-
-  // --no-bundle is Linux-only; keep normal packaging on other platforms.
-  if (appOptions.bundle === false && platform !== 'linux') {
-    logger.warn('✼ --no-bundle is only supported on Linux; ignoring it.');
-    appOptions.bundle = true;
   }
 
   const iconPath = await handleIcon(appOptions, url);

@@ -71,11 +71,7 @@ export async function createBuildWorkspace(sourceDirectory: string) {
     );
     const modules = path.join(sourceDirectory, 'node_modules');
     if (await hasReadyTauriCli(sourceDirectory)) {
-      await fs.symlink(
-        modules,
-        path.join(directory, 'node_modules'),
-        process.platform === 'win32' ? 'junction' : 'dir',
-      );
+      await fs.symlink(modules, path.join(directory, 'node_modules'), 'dir');
     }
     return directory;
   } catch (error) {

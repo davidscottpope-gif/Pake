@@ -41,7 +41,7 @@ const NUMBER_RANGES: Record<string, NumberRange> = {
 // would reject. Without this, an unknown value falls through to the builder's
 // own fallback and silently produces the default behavior.
 const ENUM_VALUES: Record<string, readonly string[]> = {
-  windowsToolchain: ['msvc', 'gnu'],
+  // (none at the moment)
 };
 
 function expectedTypeFor(key: string): ExpectedType | null {

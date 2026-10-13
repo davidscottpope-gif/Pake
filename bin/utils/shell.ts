@@ -14,14 +14,6 @@ export interface ShellCommand {
 }
 
 async function terminateBuildTree(pid: number): Promise<void> {
-  if (process.platform === 'win32') {
-    await execa('taskkill', ['/pid', String(pid), '/T', '/F'], {
-      timeout: 5000,
-      windowsHide: true,
-    });
-    return;
-  }
-
   const killGroup = (signal: NodeJS.Signals) => {
     try {
       process.kill(-pid, signal);
@@ -61,14 +53,14 @@ export async function shellExec(
     const subprocess = execa(command.executable, command.args, {
       cwd: command.cwd ?? npmDirectory,
       // Use 'inherit' to show all output directly to user in real-time.
-      // This ensures linuxdeploy and other tool outputs are visible during builds.
+      // This keeps the Tauri bundler's output visible during builds.
       // In machine mode (--json) stdout is reserved for the final JSON result,
       // so subprocess stdout is rerouted to stderr instead.
       stdin: 'inherit',
       stdout: isMachineMode() ? process.stderr : 'inherit',
       stderr: 'inherit',
       shell: false,
-      detached: Boolean(signal) && process.platform !== 'win32',
+      detached: Boolean(signal),
       timeout,
       env: env ? { ...process.env, ...env } : process.env,
     });
@@ -107,9 +99,8 @@ export async function shellExec(
       );
     }
 
-    // AppImage/linuxdeploy guidance is added by the caller (BaseBuilder), which
-    // knows the build target. We only have the command line here (the tool's
-    // diagnostics stream to the terminal via stdio:inherit, not into the error).
+    // The tool's own diagnostics stream to the terminal (stdio:inherit), not
+    // into the error, so only the command line and exit code are available here.
     throw new Error(
       `Error occurred while executing command ${description}. Exit code: ${exitCode}. Details: ${errorMessage}`,
     );

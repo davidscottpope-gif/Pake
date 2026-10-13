@@ -58,11 +58,6 @@
       "description": "macOS only: hide title bar (immersive header).",
       "default": false
     },
-    "hideWindowDecorations": {
-      "type": "boolean",
-      "description": "Windows/Linux only: hide native window decorations.",
-      "default": false
-    },
     "multiArch": {
       "type": "boolean",
       "description": "macOS only: build a universal binary for both Intel and Apple Silicon.",
@@ -103,12 +98,7 @@
     },
     "targets": {
       "type": "string",
-      "description": "Build target format. Linux: deb/appimage/rpm/zst and *-arm64 variants (comma-separated allowed); Windows: x64/arm64; macOS: intel/apple/universal/app/dmg. Defaults to the platform installer format."
-    },
-    "windowsToolchain": {
-      "type": "string",
-      "enum": ["msvc", "gnu"],
-      "description": "Windows Rust toolchain: msvc (default, requires Visual Studio Build Tools) or gnu (MinGW/MSYS2, for machines without them). Windows only; ignored elsewhere."
+      "description": "Build target: dmg (default) or app. Architecture values intel/apple/universal are also accepted."
     },
     "appVersion": {
       "type": "string",
@@ -127,7 +117,7 @@
     },
     "darkMode": {
       "type": "boolean",
-      "description": "Force dark mode (macOS, Windows, Linux).",
+      "description": "Force dark mode.",
       "default": false
     },
     "disabledWebShortcuts": {
@@ -152,7 +142,7 @@
     },
     "hideOnClose": {
       "type": "boolean",
-      "description": "Hide the window on close instead of exiting. Defaults to true on macOS, false elsewhere."
+      "description": "Hide the window on close instead of exiting. Defaults to true."
     },
     "restoreLastUrl": {
       "type": "boolean",
@@ -162,11 +152,6 @@
     "incognito": {
       "type": "boolean",
       "description": "Launch in incognito/private mode (no persisted cookies or storage).",
-      "default": false
-    },
-    "passwordAutosave": {
-      "type": "boolean",
-      "description": "Enable native WebView2 password-save prompts on Windows. Disabled in incognito mode. Uses the app's own profile; existing saved passwords may still autofill when disabled.",
       "default": false
     },
     "wasm": {
@@ -183,11 +168,6 @@
       "type": "boolean",
       "description": "Keep the raw binary alongside the installer.",
       "default": false
-    },
-    "bundle": {
-      "type": "boolean",
-      "description": "Linux only: false skips packaging and outputs the raw executable (CLI: --no-bundle).",
-      "default": true
     },
     "multiInstance": {
       "type": "boolean",
@@ -224,11 +204,6 @@
       "description": "Enable in-page Find UI with Cmd/Ctrl+F/G.",
       "default": false
     },
-    "installerLanguage": {
-      "type": "string",
-      "description": "Windows installer language.",
-      "default": "en-US"
-    },
     "zoom": {
       "type": "integer",
       "description": "Initial page zoom level (50-200).",
@@ -255,7 +230,7 @@
     },
     "iterativeBuild": {
       "type": "boolean",
-      "description": "Rapid build mode (app only, no dmg/deb/msi), for debugging.",
+      "description": "Rapid build mode (app only, no dmg), for debugging.",
       "default": false
     },
     "newWindow": {
